@@ -555,7 +555,8 @@ Canvas.defaultProps = {
   unit: 'px',
   axisPosition: 'center',
   pan: false,
-  search: {
-    type: 'point'
+  screenPosition: {
+    x: 0,
+    y: 0
   }
 };

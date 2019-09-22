@@ -241,6 +241,6 @@ export default class Canvas extends Component {
 }
 Canvas.defaultProps = {
   zoom:1,snap:{x:10,y:10},unit:'px',axisPosition:'center',pan:false,
-  search:{type:'point'}
+  screenPosition:{x:0,y:0}
 }
 
