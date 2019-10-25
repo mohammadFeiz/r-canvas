@@ -3,11 +3,16 @@ import $ from 'jquery';
 export default class Canvas extends Component {
   constructor(props) {
     super(props);
+    this.PI = Math.PI / 180;
     this.dom = createRef(); this.width = 0; this.height = 0;
     this.isMobile = 'ontouchstart' in document.documentElement?true:false;
   }
   getStyle(style = {}){return style;}
-  getCoordsByUnit(point,unit){return this.props.unit === '%' || unit === '%'?{x:point.x * this.width /100,y:point.y * this.height / 100}:point;}
+  getCoords(value,size){
+    if(typeof value === 'number'){return value}
+    if(value.indexOf('%') === -1){return parseFloat(value)}
+    return parseFloat(value) * size / 100; 
+  }
   draw(items = this.props.items){
     for(var i = 0; i < items.length; i++){
       var item = items[i];
@@ -18,22 +23,21 @@ export default class Canvas extends Component {
   }
   drawline(line) {
     var ctx = this.ctx,{zoom} = this.props,p;
-    var {w = 1,fill,stroke,lineJoin = 'miter',lineCap = 'butt',dash,points,close,rotate,pivot} = line;
+    var {lineWidth = 1,fill,stroke,lineJoin = 'miter',lineCap = 'butt',dash,points,close,rotate,pivot} = line;
     var length = line.points.length;
     if(length < 2){return false;}
     var start = line.points[0];
     ctx.save();
     ctx.beginPath();
     if(rotate !== undefined && pivot){this.rotate(rotate,pivot || this.getSides(points).center);}
-    if(dash){ctx.setLineDash(dash);}
+    dash && ctx.setLineDash(dash);
     ctx.lineJoin = lineJoin;
     ctx.lineCap = lineCap;
-    ctx.lineWidth = w * zoom;
-    p = this.getCoordsByUnit(start);
-    ctx.moveTo(p.x * zoom, p.y * zoom); 
+    ctx.lineWidth = lineWidth * zoom;
+    ctx.moveTo(this.getCoords(start.x) * zoom, this.getCoords(start.y) * zoom); 
     for(var i = 1; i < length; i++){
-        var p = this.getCoordsByUnit(points[i]);
-        ctx.lineTo(p.x * zoom, p.y * zoom);
+        var p = points[i];
+        ctx.lineTo(this.getCoords(p.x) * zoom, this.getCoords(p.y) * zoom);
     }
     if(length > 2 && close){
       ctx.lineTo(start.x * zoom, start.y * zoom);
@@ -42,26 +46,29 @@ export default class Canvas extends Component {
     ctx.closePath();
     ctx.restore();
   }
-  drawarc(obj) {
+  drawarc(arc) {
     var {
-      lineWidth = 1,slice=[0,360],r = 20,fill,stroke,lineCap,lineJoin = 'butt',
-      x = 0,y = 0,clockwise,shadow,rotate,pivot,unit
-    } = obj;
-    var {direction='clock',offset = 0} = this.props.rotateSetting;
-    var {zoom} = this.props;
+      x = 0,y = 0,r = 20,slice=[0,360],
+      lineWidth = 1,lineCap,lineJoin = 'butt',dash,
+      fill,stroke,shadow,
+      rotate,pivot,angle
+    } = arc;
+    var {rotateSetting,zoom} = this.props;
+    var {direction='clock',offset = 0} = rotateSetting;
     var ctx = this.ctx;
-    var p = this.getCoordsByUnit({x,y},unit);
-    p = this.getCoordsByPivot({p,r,pivot,type:'arc',lineWidth});
+    x = this.getCoords(x);
+    y = this.getCoords(y);
+    var p = this.getCoordsByPivot({x,y,r,pivot,type:'arc',lineWidth});
     ctx.save();
     ctx.beginPath();
-    if(rotate !== undefined){this.rotate(rotate,{x,y});}
-    if(direction === 'clock'){
-      ctx.arc(p.x * zoom,p.y * zoom,r * zoom,slice[0] * Math.PI / 180,slice[1] * Math.PI / 180);
-    }
-    else if(direction === 'clockwise'){
-      ctx.arc(p.x * zoom, p.y * zoom, r * zoom, -slice[1] * Math.PI / 180, -slice[0] * Math.PI / 180);
-    }
+    this.rotate(rotate,{x,y});
+    angle && this.rotate(angle,{x:p.x,y:p.y});
+    var startAngle,endAngle;
+    if(direction === 'clock'){startAngle = slice[0] * this.PI; endAngle = slice[1] * this.PI;}
+    else{startAngle = -slice[1] * this.PI; endAngle = -slice[0] * this.PI;}
+    ctx.arc(p.x * zoom, p.y * zoom, r * zoom, startAngle, endAngle);
     this.shadow(shadow);
+    dash && ctx.setLineDash(dash);
     ctx.lineCap = lineCap;
     ctx.lineJoin = lineJoin;
     ctx.lineWidth = lineWidth;
@@ -69,61 +76,56 @@ export default class Canvas extends Component {
     ctx.closePath();
     ctx.restore();
   }
-  drawrectangle(obj) { 
-    var {width = 20,height = 20,x = 0,y = 0,lineWidth = 1,fill,stroke,rotate,pivot='center',unit} = obj; 
-    var {zoom,rotateSetting} = this.props,ctx = this.ctx;
-    var p = this.getCoordsByUnit({x,y},unit);
-    var limit = this.getCoordsByUnit({x:width,y:height});
-    p = this.getCoordsByPivot({p,width:limit.x,height:limit.y,pivot,type:'rectangle',lineWidth});
+  drawrectangle(rect) { 
+    var {
+      x = 0,y = 0,width = 20,height = 20,
+      lineWidth = 1,dash,
+      fill,stroke,shadow,
+      rotate,pivot,angle,
+    } = rect; 
+    var {zoom} = this.props,ctx = this.ctx;
+    x = this.getCoords(x);
+    y = this.getCoords(y);
+    width = this.getCoords(width);
+    height = this.getCoords(height);
+    var p = this.getCoordsByPivot({x,y,width,height,pivot,type:'rectangle'});
     ctx.save();
     ctx.beginPath();
-    if(rotate !== undefined){this.rotate(rotate,{x,y});}
-    ctx.rect(p.x * zoom, p.y * zoom, limit.x * zoom, limit.y * zoom);
+    this.rotate(rotate,{x,y});
+    angle && this.rotate(angle,{x:p.x + width / 2,y:p.y + height / 2});
+    ctx.rect(p.x * zoom, p.y * zoom, width * zoom, height * zoom);
+    this.shadow(shadow);
+    dash && ctx.setLineDash(dash);
     ctx.lineWidth = lineWidth;
-    if (fill) {ctx.fillStyle = fill; ctx.fill();}
-    if(stroke) {ctx.strokeStyle = stroke; ctx.stroke();}
+    this.ink(fill,stroke);
     ctx.closePath();
     ctx.restore();
   }
-  getCoordsByPivot({p,width,height,r,pivot,type,lineWidth}){
-    if(!pivot){return p;}
-    var f = {
-      custom:function(){return {x:p.x - pivot.x,y:p.y - pivot.y}}, 
-      rectangle:{
-        center:function(){return {x:p.x - width / 2,y:p.y - height / 2};},
-        right:function(){return {x:p.x - width - lineWidth / 2,y:p.y - height / 2};},
-        left:function(){return {x:p.x + lineWidth / 2,y:p.y - height / 2};},
-        up:function(){return {x:p.x - width / 2,y:p.y + lineWidth / 2};},
-        down:function(){return {x:p.x - width / 2,y:p.y - height - lineWidth / 2};},
-        upright:function(){return {x:p.x - width - lineWidth / 2,y:p.y + lineWidth / 2};},
-        upleft:function(){return {x:p.x + lineWidth / 2,y:p.y + lineWidth / 2};},
-        downright:function(){return {x:p.x - width - lineWidth / 2,y:p.y - height - lineWidth / 2};},
-        downleft:function(){return {x:p.x / 2 + lineWidth / 2,y:p.y - height - lineWidth / 2};},
-      },
-      arc:{
-        center:function(){return p;},
-        right:function(){return {x:p.x - r - lineWidth / 2,y:p.y};},
-        left:function(){return {x:p.x + r + lineWidth / 2,y:p.y};},
-        up:function(){return {x:p.x,y:p.y + r + lineWidth / 2};},
-        down:function(){return {x:p.x,y:p.y - r - lineWidth / 2};},
-        upright:function(){return {x:p.x - r - lineWidth / 2,y:p.y + r + lineWidth / 2};},
-        upleft:function(){return {x:p.x + r + lineWidth / 2,y:p.y + r + lineWidth / 2};},
-        downright:function(){return {x:p.x - r - lineWidth / 2,y:p.y - r - lineWidth / 2};},
-        downleft:function(){return {x:p.x + r + lineWidth / 2,y:p.y - r - lineWidth / 2};},
-      }
+  getCoordsByPivot({x,y,width,height,r,pivot,type,lineWidth}){
+    if(!pivot){return {x,y};}
+    var {x:px = 0,y:py = 0} = pivot;
+    if(type === 'rectangle'){
+      px = this.getCoords(px,width);
+      py = this.getCoords(py,height);
+      return {x:x - px,y:y - py}
     }
-    return typeof pivot === 'string'?f[type][pivot]():f.custom();
+    if(type === 'arc'){
+      px = this.getCoords(px,r * 2);
+      py = this.getCoords(py,r * 2);
+      return {x:x - px,y:y - py}
+    }
   }
   drawtext(obj) {//x,y,text,angle,textBaseLine,color,textAlign
     var {zoom} = this.props;
     var ctx = this.ctx;
     var {textBaseLine = 'bottom',textAlign='center',fontSize=12,color='#000',text,rotate,unit,pivot,lineWidth = 1,x,y,angle} = obj;
-    var p = this.getCoordsByUnit({x,y},unit);
-    p = this.getCoordsByPivot({p,pivot,type:'rectangle',lineWidth});
+    x = this.getCoords(x);
+    y = this.getCoords(y);
+    var p = this.getCoordsByPivot({x,y,pivot,type:'rectangle',lineWidth});
     ctx.save();
     ctx.beginPath();
-    if(rotate !== undefined){this.rotate(rotate,{x,y});}
-    if(angle !== undefined){this.rotate(angle,p);}
+    this.rotate(rotate,{x,y});
+    angle && this.rotate(angle,p);
     ctx.textBaseline = textBaseLine;
     ctx.font = (fontSize * zoom) + "px arial";
     ctx.textAlign = textAlign;
@@ -167,30 +169,37 @@ export default class Canvas extends Component {
     }
     return g;
   }
-  rotate(angle,center){
-    var {direction = 'clock',offset = 0} = this.props.rotateSetting;
+  rotate(angle = 0,center){
+    var {zoom,rotateSetting} = this.props;
+    var {direction = 'clock',offset = 0} = rotateSetting;
+    if(offset === 0 && angle === 0){return;}
     angle+=offset;
-    angle = angle * Math.PI / 180 * (direction === 'clockwise'?-1:1);
+    angle = angle * this.PI * (direction === 'clockwise'?-1:1);
     var s = Math.sin(angle),c = Math.cos(angle);
     var p = {x:center.x,y:-center.y};
     this.ctx.rotate(angle);
-    this.ctx.translate((p.x * c - p.y * s) - p.x,p.y - (p.x * s + p.y * c));
+    var x = (p.x * c - p.y * s) - p.x;
+    var y = p.y - (p.x * s + p.y * c);
+    this.ctx.translate(x * zoom,y * zoom);
   }
   
-  getAxisPosition(type){
-    if(type === 'center'){return {x:this.width/2,y:this.height/2};}
-    else if(type === 'downleft'){return {x:0,y:this.height};}
-    else if(type === 'downright'){return {x:this.width,y:this.height};}
-    else if(type === 'upleft'){return {x:0,y:0};}
-    else if(type === 'upright'){return {x:this.width,y:0};}
+  getAxisPosition({x = '50%',y = '50%'}){
+    var X,Y;
+    if(x.indexOf('%') !== -1){X = this.width * parseFloat(x) / 100;}
+    else if(x.indexOf('px') !== -1){X = parseFloat(x);}
+    else{console.error('canvas axisPosition.x error. correct example: ("10px" or "10%")')}
+    if(y.indexOf('%') !== -1){Y = this.height * parseFloat(y) / 100;}
+    else if(y.indexOf('px') !== -1){Y = parseFloat(y);}
+    else{console.error('canvas axisPosition.y error. correct example: ("10px" or "10%")')}
+    return {x:X,y:Y};
   }
   setScreen(){
     var {zoom,screenPosition,axisPosition} = this.props;
     var canvas = this.dom.current;
     this.axisPosition = this.getAxisPosition(axisPosition);
     this.translate = { 
-      x: (this.axisPosition.x) - (screenPosition.x * zoom), 
-      y: (this.axisPosition.y) - (screenPosition.y * zoom * -1) 
+      x: (this.axisPosition.x) - (screenPosition[0] * zoom), 
+      y: (this.axisPosition.y) - (screenPosition[1] * zoom * -1) 
     }
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.translate(this.translate.x, this.translate.y);
@@ -200,27 +209,31 @@ export default class Canvas extends Component {
   }
   componentWillReceiveProps(){this.update();}
   getBackground(){
-    var {snap,zoom,unit} = this.props; 
+    var {grid,zoom} = this.props;
+    var {width,height} = this; 
+    var {x,y,color='#000'} = grid;
+    x = this.getCoords(x,width);
+    y = this.getCoords(y,height);
     var a = 100 * zoom;
-    var b = unit === '%' ? `calc(${snap.x} * ${zoom})` : (snap.x * zoom) + 'px';
-    var c = unit === '%' ? `calc(${snap.y} * ${zoom})` : (snap.y * zoom) + 'px';
+    var b = (x * zoom) + 'px';
+    var c = (y * zoom) + 'px';
     return {
-      backgroundImage:`linear-gradient(rgba(${snap.color},0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(${snap.color},0.5) 0px, transparent 0px),linear-gradient(rgba(${snap.color},0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(${snap.color},0.3) 1px, transparent 1px)`,
+      backgroundImage:`linear-gradient(rgba(${color},0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(${color},0.5) 0px, transparent 0px),linear-gradient(rgba(${color},0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(${color},0.3) 1px, transparent 1px)`,
       backgroundSize : `${a}px ${a}px,${a}px ${a}px,${b} ${c},${b} ${c}`
     }
   }
   update(){
-    var {getSize,snap} = this.props;
+    var {getSize,grid} = this.props;
     var dom = this.dom.current;
     this.width = $(dom).width();
     this.height = $(dom).height();
     if(getSize){getSize(this.width,this.height);}
     dom.width = this.width;
     dom.height = this.height;
-    if(snap){$(dom).css(this.getBackground());}
+    if(grid){$(dom).css(this.getBackground());}
     this.clear();
     this.setScreen();
-    if(snap){this.drawAxes();}
+    if(grid){this.drawAxes();}
     this.draw();
   }
   clear() {
@@ -242,10 +255,10 @@ export default class Canvas extends Component {
   }
   mouseDown(e){
     this.mousePosition = this.getMousePosition(e);
-    var {mouseDown,pan,getMousePosition} = this.props;
+    var {mouseDown,onpan,getMousePosition} = this.props;
     if(getMousePosition){getMousePosition(this.mousePosition);}
     if(mouseDown){mouseDown(e);} 
-    if(pan){this.panmousedown(e);}
+    if(onpan){this.panmousedown(e);}
   }
   mouseMove(e){
     this.mousePosition = this.getMousePosition(e);
@@ -263,8 +276,8 @@ export default class Canvas extends Component {
     var offset = $(this.dom.current).offset();
     client = {x:client.x - offset.left + window.pageXOffset,y:client.y - offset.top + window.pageYOffset}
     var coords = { 
-      x: Math.floor((client.x - (this.axisPosition.x) + (sp.x * zoom)) / zoom), 
-      y: Math.floor((client.y - (this.axisPosition.y) + (sp.y * zoom * -1)) / zoom) 
+      x: Math.floor((client.x - (this.axisPosition.x) + (sp[0] * zoom)) / zoom), 
+      y: Math.floor((client.y - (this.axisPosition.y) + (sp[1] * zoom * -1)) / zoom) 
     };
     if(unit === '%'){
       return {
@@ -284,7 +297,7 @@ export default class Canvas extends Component {
     var client = this.getClient(e);
     this.startOffset = { 
         x: client.x, y: client.y, 
-        endX: screenPosition.x, endY: screenPosition.y 
+        endX: screenPosition[0], endY: screenPosition[1] 
     };
   }
   panmouseup() {
@@ -295,9 +308,8 @@ export default class Canvas extends Component {
       var so = this.startOffset, {zoom,onpan} = this.props, coords = this.getClient(e);
       //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
       this.panned = true;
-      var x = (so.x - coords.x) / zoom + so.endX, 
-          y = (coords.y - so.y) / zoom + so.endY;
-      if(onpan){onpan({x,y});}
+      var x = (so.x - coords.x) / zoom + so.endX,y = (coords.y - so.y) / zoom + so.endY;
+      onpan([x,y]);
   }
   getEvent(event){var isMobile = 'ontouchstart' in document.documentElement?true:false;var mobileEvents = { mousedown: "touchstart", mousemove: "touchmove", mouseup: "touchend" };return isMobile ? mobileEvents[event] : event;}
   eventHandler(selector, event, action) {
@@ -333,7 +345,7 @@ export default class Canvas extends Component {
   }
 }
 Canvas.defaultProps = {
-  zoom:1,unit:'px',axisPosition:'center',pan:false,
-  screenPosition:{x:0,y:0},items:[],rotateSetting:{direction:'clock',offset:0}
+  zoom:1,unit:'px',axisPosition:{x:'50%',y:'50%'},
+  screenPosition:[0,0],items:[],rotateSetting:{direction:'clock',offset:0}
 }
 

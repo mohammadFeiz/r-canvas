@@ -54,6 +54,7 @@ function (_Component) {
     _classCallCheck(this, Canvas);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(Canvas).call(this, props));
+    _this.PI = Math.PI / 180;
     _this.dom = (0, _react.createRef)();
     _this.width = 0;
     _this.height = 0;
@@ -68,12 +69,17 @@ function (_Component) {
       return style;
     }
   }, {
-    key: "getCoordsByUnit",
-    value: function getCoordsByUnit(point, unit) {
-      return this.props.unit === '%' || unit === '%' ? {
-        x: point.x * this.width / 100,
-        y: point.y * this.height / 100
-      } : point;
+    key: "getCoords",
+    value: function getCoords(value, size) {
+      if (typeof value === 'number') {
+        return value;
+      }
+
+      if (value.indexOf('%') === -1) {
+        return parseFloat(value);
+      }
+
+      return parseFloat(value) * size / 100;
     }
   }, {
     key: "draw",
@@ -100,8 +106,8 @@ function (_Component) {
       var ctx = this.ctx,
           zoom = this.props.zoom,
           p;
-      var _line$w = line.w,
-          w = _line$w === void 0 ? 1 : _line$w,
+      var _line$lineWidth = line.lineWidth,
+          lineWidth = _line$lineWidth === void 0 ? 1 : _line$lineWidth,
           fill = line.fill,
           stroke = line.stroke,
           _line$lineJoin = line.lineJoin,
@@ -127,19 +133,15 @@ function (_Component) {
         this.rotate(rotate, pivot || this.getSides(points).center);
       }
 
-      if (dash) {
-        ctx.setLineDash(dash);
-      }
-
+      dash && ctx.setLineDash(dash);
       ctx.lineJoin = lineJoin;
       ctx.lineCap = lineCap;
-      ctx.lineWidth = w * zoom;
-      p = this.getCoordsByUnit(start);
-      ctx.moveTo(p.x * zoom, p.y * zoom);
+      ctx.lineWidth = lineWidth * zoom;
+      ctx.moveTo(this.getCoords(start.x) * zoom, this.getCoords(start.y) * zoom);
 
       for (var i = 1; i < length; i++) {
-        var p = this.getCoordsByUnit(points[i]);
-        ctx.lineTo(p.x * zoom, p.y * zoom);
+        var p = points[i];
+        ctx.lineTo(this.getCoords(p.x) * zoom, this.getCoords(p.y) * zoom);
       }
 
       if (length > 2 && close) {
@@ -152,40 +154,40 @@ function (_Component) {
     }
   }, {
     key: "drawarc",
-    value: function drawarc(obj) {
-      var _obj$lineWidth = obj.lineWidth,
-          lineWidth = _obj$lineWidth === void 0 ? 1 : _obj$lineWidth,
-          _obj$slice = obj.slice,
-          slice = _obj$slice === void 0 ? [0, 360] : _obj$slice,
-          _obj$r = obj.r,
-          r = _obj$r === void 0 ? 20 : _obj$r,
-          fill = obj.fill,
-          stroke = obj.stroke,
-          lineCap = obj.lineCap,
-          _obj$lineJoin = obj.lineJoin,
-          lineJoin = _obj$lineJoin === void 0 ? 'butt' : _obj$lineJoin,
-          _obj$x = obj.x,
-          x = _obj$x === void 0 ? 0 : _obj$x,
-          _obj$y = obj.y,
-          y = _obj$y === void 0 ? 0 : _obj$y,
-          clockwise = obj.clockwise,
-          shadow = obj.shadow,
-          rotate = obj.rotate,
-          pivot = obj.pivot,
-          unit = obj.unit;
-      var _this$props$rotateSet = this.props.rotateSetting,
-          _this$props$rotateSet2 = _this$props$rotateSet.direction,
-          direction = _this$props$rotateSet2 === void 0 ? 'clock' : _this$props$rotateSet2,
-          _this$props$rotateSet3 = _this$props$rotateSet.offset,
-          offset = _this$props$rotateSet3 === void 0 ? 0 : _this$props$rotateSet3;
-      var zoom = this.props.zoom;
+    value: function drawarc(arc) {
+      var _arc$x = arc.x,
+          x = _arc$x === void 0 ? 0 : _arc$x,
+          _arc$y = arc.y,
+          y = _arc$y === void 0 ? 0 : _arc$y,
+          _arc$r = arc.r,
+          r = _arc$r === void 0 ? 20 : _arc$r,
+          _arc$slice = arc.slice,
+          slice = _arc$slice === void 0 ? [0, 360] : _arc$slice,
+          _arc$lineWidth = arc.lineWidth,
+          lineWidth = _arc$lineWidth === void 0 ? 1 : _arc$lineWidth,
+          lineCap = arc.lineCap,
+          _arc$lineJoin = arc.lineJoin,
+          lineJoin = _arc$lineJoin === void 0 ? 'butt' : _arc$lineJoin,
+          dash = arc.dash,
+          fill = arc.fill,
+          stroke = arc.stroke,
+          shadow = arc.shadow,
+          rotate = arc.rotate,
+          pivot = arc.pivot,
+          angle = arc.angle;
+      var _this$props = this.props,
+          rotateSetting = _this$props.rotateSetting,
+          zoom = _this$props.zoom;
+      var _rotateSetting$direct = rotateSetting.direction,
+          direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct,
+          _rotateSetting$offset = rotateSetting.offset,
+          offset = _rotateSetting$offset === void 0 ? 0 : _rotateSetting$offset;
       var ctx = this.ctx;
-      var p = this.getCoordsByUnit({
+      x = this.getCoords(x);
+      y = this.getCoords(y);
+      var p = this.getCoordsByPivot({
         x: x,
-        y: y
-      }, unit);
-      p = this.getCoordsByPivot({
-        p: p,
+        y: y,
         r: r,
         pivot: pivot,
         type: 'arc',
@@ -193,21 +195,27 @@ function (_Component) {
       });
       ctx.save();
       ctx.beginPath();
-
-      if (rotate !== undefined) {
-        this.rotate(rotate, {
-          x: x,
-          y: y
-        });
-      }
+      this.rotate(rotate, {
+        x: x,
+        y: y
+      });
+      angle && this.rotate(angle, {
+        x: p.x,
+        y: p.y
+      });
+      var startAngle, endAngle;
 
       if (direction === 'clock') {
-        ctx.arc(p.x * zoom, p.y * zoom, r * zoom, slice[0] * Math.PI / 180, slice[1] * Math.PI / 180);
-      } else if (direction === 'clockwise') {
-        ctx.arc(p.x * zoom, p.y * zoom, r * zoom, -slice[1] * Math.PI / 180, -slice[0] * Math.PI / 180);
+        startAngle = slice[0] * this.PI;
+        endAngle = slice[1] * this.PI;
+      } else {
+        startAngle = -slice[1] * this.PI;
+        endAngle = -slice[0] * this.PI;
       }
 
+      ctx.arc(p.x * zoom, p.y * zoom, r * zoom, startAngle, endAngle);
       this.shadow(shadow);
+      dash && ctx.setLineDash(dash);
       ctx.lineCap = lineCap;
       ctx.lineJoin = lineJoin;
       ctx.lineWidth = lineWidth;
@@ -217,73 +225,61 @@ function (_Component) {
     }
   }, {
     key: "drawrectangle",
-    value: function drawrectangle(obj) {
-      var _obj$width = obj.width,
-          width = _obj$width === void 0 ? 20 : _obj$width,
-          _obj$height = obj.height,
-          height = _obj$height === void 0 ? 20 : _obj$height,
-          _obj$x2 = obj.x,
-          x = _obj$x2 === void 0 ? 0 : _obj$x2,
-          _obj$y2 = obj.y,
-          y = _obj$y2 === void 0 ? 0 : _obj$y2,
-          _obj$lineWidth2 = obj.lineWidth,
-          lineWidth = _obj$lineWidth2 === void 0 ? 1 : _obj$lineWidth2,
-          fill = obj.fill,
-          stroke = obj.stroke,
-          rotate = obj.rotate,
-          _obj$pivot = obj.pivot,
-          pivot = _obj$pivot === void 0 ? 'center' : _obj$pivot,
-          unit = obj.unit;
-      var _this$props = this.props,
-          zoom = _this$props.zoom,
-          rotateSetting = _this$props.rotateSetting,
+    value: function drawrectangle(rect) {
+      var _rect$x = rect.x,
+          x = _rect$x === void 0 ? 0 : _rect$x,
+          _rect$y = rect.y,
+          y = _rect$y === void 0 ? 0 : _rect$y,
+          _rect$width = rect.width,
+          width = _rect$width === void 0 ? 20 : _rect$width,
+          _rect$height = rect.height,
+          height = _rect$height === void 0 ? 20 : _rect$height,
+          _rect$lineWidth = rect.lineWidth,
+          lineWidth = _rect$lineWidth === void 0 ? 1 : _rect$lineWidth,
+          dash = rect.dash,
+          fill = rect.fill,
+          stroke = rect.stroke,
+          shadow = rect.shadow,
+          rotate = rect.rotate,
+          pivot = rect.pivot,
+          angle = rect.angle;
+      var zoom = this.props.zoom,
           ctx = this.ctx;
-      var p = this.getCoordsByUnit({
+      x = this.getCoords(x);
+      y = this.getCoords(y);
+      width = this.getCoords(width);
+      height = this.getCoords(height);
+      var p = this.getCoordsByPivot({
         x: x,
-        y: y
-      }, unit);
-      var limit = this.getCoordsByUnit({
-        x: width,
-        y: height
-      });
-      p = this.getCoordsByPivot({
-        p: p,
-        width: limit.x,
-        height: limit.y,
+        y: y,
+        width: width,
+        height: height,
         pivot: pivot,
-        type: 'rectangle',
-        lineWidth: lineWidth
+        type: 'rectangle'
       });
       ctx.save();
       ctx.beginPath();
-
-      if (rotate !== undefined) {
-        this.rotate(rotate, {
-          x: x,
-          y: y
-        });
-      }
-
-      ctx.rect(p.x * zoom, p.y * zoom, limit.x * zoom, limit.y * zoom);
+      this.rotate(rotate, {
+        x: x,
+        y: y
+      });
+      angle && this.rotate(angle, {
+        x: p.x + width / 2,
+        y: p.y + height / 2
+      });
+      ctx.rect(p.x * zoom, p.y * zoom, width * zoom, height * zoom);
+      this.shadow(shadow);
+      dash && ctx.setLineDash(dash);
       ctx.lineWidth = lineWidth;
-
-      if (fill) {
-        ctx.fillStyle = fill;
-        ctx.fill();
-      }
-
-      if (stroke) {
-        ctx.strokeStyle = stroke;
-        ctx.stroke();
-      }
-
+      this.ink(fill, stroke);
       ctx.closePath();
       ctx.restore();
     }
   }, {
     key: "getCoordsByPivot",
     value: function getCoordsByPivot(_ref) {
-      var p = _ref.p,
+      var x = _ref.x,
+          y = _ref.y,
           width = _ref.width,
           height = _ref.height,
           r = _ref.r,
@@ -292,127 +288,34 @@ function (_Component) {
           lineWidth = _ref.lineWidth;
 
       if (!pivot) {
-        return p;
+        return {
+          x: x,
+          y: y
+        };
       }
 
-      var f = {
-        custom: function custom() {
-          return {
-            x: p.x - pivot.x,
-            y: p.y - pivot.y
-          };
-        },
-        rectangle: {
-          center: function center() {
-            return {
-              x: p.x - width / 2,
-              y: p.y - height / 2
-            };
-          },
-          right: function right() {
-            return {
-              x: p.x - width - lineWidth / 2,
-              y: p.y - height / 2
-            };
-          },
-          left: function left() {
-            return {
-              x: p.x + lineWidth / 2,
-              y: p.y - height / 2
-            };
-          },
-          up: function up() {
-            return {
-              x: p.x - width / 2,
-              y: p.y + lineWidth / 2
-            };
-          },
-          down: function down() {
-            return {
-              x: p.x - width / 2,
-              y: p.y - height - lineWidth / 2
-            };
-          },
-          upright: function upright() {
-            return {
-              x: p.x - width - lineWidth / 2,
-              y: p.y + lineWidth / 2
-            };
-          },
-          upleft: function upleft() {
-            return {
-              x: p.x + lineWidth / 2,
-              y: p.y + lineWidth / 2
-            };
-          },
-          downright: function downright() {
-            return {
-              x: p.x - width - lineWidth / 2,
-              y: p.y - height - lineWidth / 2
-            };
-          },
-          downleft: function downleft() {
-            return {
-              x: p.x / 2 + lineWidth / 2,
-              y: p.y - height - lineWidth / 2
-            };
-          }
-        },
-        arc: {
-          center: function center() {
-            return p;
-          },
-          right: function right() {
-            return {
-              x: p.x - r - lineWidth / 2,
-              y: p.y
-            };
-          },
-          left: function left() {
-            return {
-              x: p.x + r + lineWidth / 2,
-              y: p.y
-            };
-          },
-          up: function up() {
-            return {
-              x: p.x,
-              y: p.y + r + lineWidth / 2
-            };
-          },
-          down: function down() {
-            return {
-              x: p.x,
-              y: p.y - r - lineWidth / 2
-            };
-          },
-          upright: function upright() {
-            return {
-              x: p.x - r - lineWidth / 2,
-              y: p.y + r + lineWidth / 2
-            };
-          },
-          upleft: function upleft() {
-            return {
-              x: p.x + r + lineWidth / 2,
-              y: p.y + r + lineWidth / 2
-            };
-          },
-          downright: function downright() {
-            return {
-              x: p.x - r - lineWidth / 2,
-              y: p.y - r - lineWidth / 2
-            };
-          },
-          downleft: function downleft() {
-            return {
-              x: p.x + r + lineWidth / 2,
-              y: p.y - r - lineWidth / 2
-            };
-          }
-        }
-      };
-      return typeof pivot === 'string' ? f[type][pivot]() : f.custom();
+      var _pivot$x = pivot.x,
+          px = _pivot$x === void 0 ? 0 : _pivot$x,
+          _pivot$y = pivot.y,
+          py = _pivot$y === void 0 ? 0 : _pivot$y;
+
+      if (type === 'rectangle') {
+        px = this.getCoords(px, width);
+        py = this.getCoords(py, height);
+        return {
+          x: x - px,
+          y: y - py
+        };
+      }
+
+      if (type === 'arc') {
+        px = this.getCoords(px, r * 2);
+        py = this.getCoords(py, r * 2);
+        return {
+          x: x - px,
+          y: y - py
+        };
+      }
     }
   }, {
     key: "drawtext",
@@ -432,35 +335,27 @@ function (_Component) {
           rotate = obj.rotate,
           unit = obj.unit,
           pivot = obj.pivot,
-          _obj$lineWidth3 = obj.lineWidth,
-          lineWidth = _obj$lineWidth3 === void 0 ? 1 : _obj$lineWidth3,
+          _obj$lineWidth = obj.lineWidth,
+          lineWidth = _obj$lineWidth === void 0 ? 1 : _obj$lineWidth,
           x = obj.x,
           y = obj.y,
           angle = obj.angle;
-      var p = this.getCoordsByUnit({
+      x = this.getCoords(x);
+      y = this.getCoords(y);
+      var p = this.getCoordsByPivot({
         x: x,
-        y: y
-      }, unit);
-      p = this.getCoordsByPivot({
-        p: p,
+        y: y,
         pivot: pivot,
         type: 'rectangle',
         lineWidth: lineWidth
       });
       ctx.save();
       ctx.beginPath();
-
-      if (rotate !== undefined) {
-        this.rotate(rotate, {
-          x: x,
-          y: y
-        });
-      }
-
-      if (angle !== undefined) {
-        this.rotate(angle, p);
-      }
-
+      this.rotate(rotate, {
+        x: x,
+        y: y
+      });
+      angle && this.rotate(angle, p);
       ctx.textBaseline = textBaseLine;
       ctx.font = fontSize * zoom + "px arial";
       ctx.textAlign = textAlign;
@@ -545,14 +440,23 @@ function (_Component) {
     }
   }, {
     key: "rotate",
-    value: function rotate(angle, center) {
-      var _this$props$rotateSet4 = this.props.rotateSetting,
-          _this$props$rotateSet5 = _this$props$rotateSet4.direction,
-          direction = _this$props$rotateSet5 === void 0 ? 'clock' : _this$props$rotateSet5,
-          _this$props$rotateSet6 = _this$props$rotateSet4.offset,
-          offset = _this$props$rotateSet6 === void 0 ? 0 : _this$props$rotateSet6;
+    value: function rotate() {
+      var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+      var center = arguments.length > 1 ? arguments[1] : undefined;
+      var _this$props2 = this.props,
+          zoom = _this$props2.zoom,
+          rotateSetting = _this$props2.rotateSetting;
+      var _rotateSetting$direct2 = rotateSetting.direction,
+          direction = _rotateSetting$direct2 === void 0 ? 'clock' : _rotateSetting$direct2,
+          _rotateSetting$offset2 = rotateSetting.offset,
+          offset = _rotateSetting$offset2 === void 0 ? 0 : _rotateSetting$offset2;
+
+      if (offset === 0 && angle === 0) {
+        return;
+      }
+
       angle += offset;
-      angle = angle * Math.PI / 180 * (direction === 'clockwise' ? -1 : 1);
+      angle = angle * this.PI * (direction === 'clockwise' ? -1 : 1);
       var s = Math.sin(angle),
           c = Math.cos(angle);
       var p = {
@@ -560,50 +464,52 @@ function (_Component) {
         y: -center.y
       };
       this.ctx.rotate(angle);
-      this.ctx.translate(p.x * c - p.y * s - p.x, p.y - (p.x * s + p.y * c));
+      var x = p.x * c - p.y * s - p.x;
+      var y = p.y - (p.x * s + p.y * c);
+      this.ctx.translate(x * zoom, y * zoom);
     }
   }, {
     key: "getAxisPosition",
-    value: function getAxisPosition(type) {
-      if (type === 'center') {
-        return {
-          x: this.width / 2,
-          y: this.height / 2
-        };
-      } else if (type === 'downleft') {
-        return {
-          x: 0,
-          y: this.height
-        };
-      } else if (type === 'downright') {
-        return {
-          x: this.width,
-          y: this.height
-        };
-      } else if (type === 'upleft') {
-        return {
-          x: 0,
-          y: 0
-        };
-      } else if (type === 'upright') {
-        return {
-          x: this.width,
-          y: 0
-        };
+    value: function getAxisPosition(_ref2) {
+      var _ref2$x = _ref2.x,
+          x = _ref2$x === void 0 ? '50%' : _ref2$x,
+          _ref2$y = _ref2.y,
+          y = _ref2$y === void 0 ? '50%' : _ref2$y;
+      var X, Y;
+
+      if (x.indexOf('%') !== -1) {
+        X = this.width * parseFloat(x) / 100;
+      } else if (x.indexOf('px') !== -1) {
+        X = parseFloat(x);
+      } else {
+        console.error('canvas axisPosition.x error. correct example: ("10px" or "10%")');
       }
+
+      if (y.indexOf('%') !== -1) {
+        Y = this.height * parseFloat(y) / 100;
+      } else if (y.indexOf('px') !== -1) {
+        Y = parseFloat(y);
+      } else {
+        console.error('canvas axisPosition.y error. correct example: ("10px" or "10%")');
+      }
+
+      return {
+        x: X,
+        y: Y
+      };
     }
   }, {
     key: "setScreen",
     value: function setScreen() {
-      var _this$props2 = this.props,
-          zoom = _this$props2.zoom,
-          screenPosition = _this$props2.screenPosition,
-          axisPosition = _this$props2.axisPosition;
+      var _this$props3 = this.props,
+          zoom = _this$props3.zoom,
+          screenPosition = _this$props3.screenPosition,
+          axisPosition = _this$props3.axisPosition;
       var canvas = this.dom.current;
       this.axisPosition = this.getAxisPosition(axisPosition);
       this.translate = {
-        x: this.axisPosition.x - screenPosition.x * zoom,
-        y: this.axisPosition.y - screenPosition.y * zoom * -1
+        x: this.axisPosition.x - screenPosition[0] * zoom,
+        y: this.axisPosition.y - screenPosition[1] * zoom * -1
       };
       this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.translate(this.translate.x, this.translate.y);
@@ -619,24 +525,31 @@ function (_Component) {
   }, {
     key: "getBackground",
     value: function getBackground() {
-      var _this$props3 = this.props,
-          snap = _this$props3.snap,
-          zoom = _this$props3.zoom,
-          unit = _this$props3.unit;
+      var _this$props4 = this.props,
+          grid = _this$props4.grid,
+          zoom = _this$props4.zoom;
+      var width = this.width,
+          height = this.height;
+      var x = grid.x,
+          y = grid.y,
+          _grid$color = grid.color,
+          color = _grid$color === void 0 ? '#000' : _grid$color;
+      x = this.getCoords(x, width);
+      y = this.getCoords(y, height);
       var a = 100 * zoom;
-      var b = unit === '%' ? "calc(".concat(snap.x, " * ").concat(zoom, ")") : snap.x * zoom + 'px';
-      var c = unit === '%' ? "calc(".concat(snap.y, " * ").concat(zoom, ")") : snap.y * zoom + 'px';
+      var b = x * zoom + 'px';
+      var c = y * zoom + 'px';
       return {
-        backgroundImage: "linear-gradient(rgba(".concat(snap.color, ",0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(").concat(snap.color, ",0.5) 0px, transparent 0px),linear-gradient(rgba(").concat(snap.color, ",0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(").concat(snap.color, ",0.3) 1px, transparent 1px)"),
+        backgroundImage: "linear-gradient(rgba(".concat(color, ",0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(").concat(color, ",0.5) 0px, transparent 0px),linear-gradient(rgba(").concat(color, ",0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(").concat(color, ",0.3) 1px, transparent 1px)"),
         backgroundSize: "".concat(a, "px ").concat(a, "px,").concat(a, "px ").concat(a, "px,").concat(b, " ").concat(c, ",").concat(b, " ").concat(c)
       };
     }
   }, {
     key: "update",
     value: function update() {
-      var _this$props4 = this.props,
-          getSize = _this$props4.getSize,
-          snap = _this$props4.snap;
+      var _this$props5 = this.props,
+          getSize = _this$props5.getSize,
+          grid = _this$props5.grid;
       var dom = this.dom.current;
       this.width = (0, _jquery.default)(dom).width();
       this.height = (0, _jquery.default)(dom).height();
@@ -648,14 +561,14 @@ function (_Component) {
       dom.width = this.width;
       dom.height = this.height;
 
-      if (snap) {
+      if (grid) {
         (0, _jquery.default)(dom).css(this.getBackground());
       }
 
       this.clear();
       this.setScreen();
 
-      if (snap) {
+      if (grid) {
         this.drawAxes();
       }
 
@@ -708,10 +621,10 @@ function (_Component) {
     key: "mouseDown",
     value: function mouseDown(e) {
       this.mousePosition = this.getMousePosition(e);
-      var _this$props5 = this.props,
-          mouseDown = _this$props5.mouseDown,
-          pan = _this$props5.pan,
-          getMousePosition = _this$props5.getMousePosition;
+      var _this$props6 = this.props,
+          mouseDown = _this$props6.mouseDown,
+          onpan = _this$props6.onpan,
+          getMousePosition = _this$props6.getMousePosition;
 
       if (getMousePosition) {
         getMousePosition(this.mousePosition);
@@ -721,7 +634,7 @@ function (_Component) {
         mouseDown(e);
       }
 
-      if (pan) {
+      if (onpan) {
         this.panmousedown(e);
       }
     }
@@ -745,10 +658,10 @@ function (_Component) {
   }, {
     key: "getMousePosition",
     value: function getMousePosition(e) {
-      var _this$props6 = this.props,
-          unit = _this$props6.unit,
-          sp = _this$props6.screenPosition,
-          zoom = _this$props6.zoom;
+      var _this$props7 = this.props,
+          unit = _this$props7.unit,
+          sp = _this$props7.screenPosition,
+          zoom = _this$props7.zoom;
       var client = this.getClient(e);
       var offset = (0, _jquery.default)(this.dom.current).offset();
       client = {
@@ -756,8 +669,8 @@ function (_Component) {
         y: client.y - offset.top + window.pageYOffset
       };
       var coords = {
-        x: Math.floor((client.x - this.axisPosition.x + sp.x * zoom) / zoom),
-        y: Math.floor((client.y - this.axisPosition.y + sp.y * zoom * -1) / zoom)
+        x: Math.floor((client.x - this.axisPosition.x + sp[0] * zoom) / zoom),
+        y: Math.floor((client.y - this.axisPosition.y + sp[1] * zoom * -1) / zoom)
       };
 
       if (unit === '%') {
@@ -780,8 +693,8 @@ function (_Component) {
       this.startOffset = {
         x: client.x,
         y: client.y,
-        endX: screenPosition.x,
-        endY: screenPosition.y
+        endX: screenPosition[0],
+        endY: screenPosition[1]
       };
     }
   }, {
@@ -794,21 +707,15 @@ function (_Component) {
     key: "panmousemove",
     value: function panmousemove(e) {
       var so = this.startOffset,
-          _this$props7 = this.props,
-          zoom = _this$props7.zoom,
-          onpan = _this$props7.onpan,
+          _this$props8 = this.props,
+          zoom = _this$props8.zoom,
+          onpan = _this$props8.onpan,
           coords = this.getClient(e); //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
 
       this.panned = true;
       var x = (so.x - coords.x) / zoom + so.endX,
           y = (coords.y - so.y) / zoom + so.endY;
-
-      if (onpan) {
-        onpan({
-          x: x,
-          y: y
-        });
-      }
+      onpan([x, y]);
     }
   }, {
     key: "getEvent",
@@ -876,9 +783,9 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props8 = this.props,
-          id = _this$props8.id,
-          style = _this$props8.style;
+      var _this$props9 = this.props,
+          id = _this$props9.id,
+          style = _this$props9.style;
       return _react.default.createElement("canvas", {
         ref: this.dom,
         id: id,
@@ -896,12 +803,11 @@ exports.default = Canvas;
 Canvas.defaultProps = {
   zoom: 1,
   unit: 'px',
-  axisPosition: 'center',
-  pan: false,
-  screenPosition: {
-    x: 0,
-    y: 0
+  axisPosition: {
+    x: '50%',
+    y: '50%'
   },
+  screenPosition: [0, 0],
   items: [],
   rotateSetting: {
     direction: 'clock',
