@@ -137,11 +137,11 @@ function (_Component) {
       ctx.lineJoin = lineJoin;
       ctx.lineCap = lineCap;
       ctx.lineWidth = lineWidth * zoom;
-      ctx.moveTo(this.getCoords(start.x) * zoom, this.getCoords(start.y) * zoom);
+      ctx.moveTo(this.getCoords(start.x, this.width) * zoom, this.getCoords(start.y, this.height) * zoom);
 
       for (var i = 1; i < length; i++) {
         var p = points[i];
-        ctx.lineTo(this.getCoords(p.x) * zoom, this.getCoords(p.y) * zoom);
+        ctx.lineTo(this.getCoords(p.x, this.width) * zoom, this.getCoords(p.y, this.height) * zoom);
       }
 
       if (length > 2 && close) {
@@ -183,8 +183,8 @@ function (_Component) {
           _rotateSetting$offset = rotateSetting.offset,
           offset = _rotateSetting$offset === void 0 ? 0 : _rotateSetting$offset;
       var ctx = this.ctx;
-      x = this.getCoords(x);
-      y = this.getCoords(y);
+      x = this.getCoords(x, this.width);
+      y = this.getCoords(y, this.height);
       var p = this.getCoordsByPivot({
         x: x,
         y: y,
@@ -245,10 +245,10 @@ function (_Component) {
           angle = rect.angle;
       var zoom = this.props.zoom,
           ctx = this.ctx;
-      x = this.getCoords(x);
-      y = this.getCoords(y);
-      width = this.getCoords(width);
-      height = this.getCoords(height);
+      x = this.getCoords(x, this.width);
+      y = this.getCoords(y, this.height);
+      width = this.getCoords(width, this.width);
+      height = this.getCoords(height, this.height);
       var p = this.getCoordsByPivot({
         x: x,
         y: y,
@@ -340,8 +340,8 @@ function (_Component) {
           x = obj.x,
           y = obj.y,
           angle = obj.angle;
-      x = this.getCoords(x);
-      y = this.getCoords(y);
+      x = this.getCoords(x, this.width);
+      y = this.getCoords(y, this.height);
       var p = this.getCoordsByPivot({
         x: x,
         y: y,

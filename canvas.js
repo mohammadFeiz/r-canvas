@@ -34,10 +34,10 @@ export default class Canvas extends Component {
     ctx.lineJoin = lineJoin;
     ctx.lineCap = lineCap;
     ctx.lineWidth = lineWidth * zoom;
-    ctx.moveTo(this.getCoords(start.x) * zoom, this.getCoords(start.y) * zoom); 
+    ctx.moveTo(this.getCoords(start.x,this.width) * zoom, this.getCoords(start.y,this.height) * zoom); 
     for(var i = 1; i < length; i++){
         var p = points[i];
-        ctx.lineTo(this.getCoords(p.x) * zoom, this.getCoords(p.y) * zoom);
+        ctx.lineTo(this.getCoords(p.x,this.width) * zoom, this.getCoords(p.y,this.height) * zoom);
     }
     if(length > 2 && close){
       ctx.lineTo(start.x * zoom, start.y * zoom);
@@ -56,8 +56,8 @@ export default class Canvas extends Component {
     var {rotateSetting,zoom} = this.props;
     var {direction='clock',offset = 0} = rotateSetting;
     var ctx = this.ctx;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
     var p = this.getCoordsByPivot({x,y,r,pivot,type:'arc',lineWidth});
     ctx.save();
     ctx.beginPath();
@@ -84,10 +84,10 @@ export default class Canvas extends Component {
       rotate,pivot,angle,
     } = rect; 
     var {zoom} = this.props,ctx = this.ctx;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
-    width = this.getCoords(width);
-    height = this.getCoords(height);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
+    width = this.getCoords(width,this.width);
+    height = this.getCoords(height,this.height);
     var p = this.getCoordsByPivot({x,y,width,height,pivot,type:'rectangle'});
     ctx.save();
     ctx.beginPath();
@@ -119,8 +119,8 @@ export default class Canvas extends Component {
     var {zoom} = this.props;
     var ctx = this.ctx;
     var {textBaseLine = 'bottom',textAlign='center',fontSize=12,color='#000',text,rotate,unit,pivot,lineWidth = 1,x,y,angle} = obj;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
     var p = this.getCoordsByPivot({x,y,pivot,type:'rectangle',lineWidth});
     ctx.save();
     ctx.beginPath();
