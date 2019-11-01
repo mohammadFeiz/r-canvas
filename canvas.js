@@ -34,10 +34,10 @@ export default class Canvas extends Component {
     ctx.lineJoin = lineJoin;
     ctx.lineCap = lineCap;
     ctx.lineWidth = lineWidth * zoom;
-    ctx.moveTo(this.getCoords(start.x) * zoom, this.getCoords(start.y) * zoom); 
+    ctx.moveTo(this.getCoords(start.x,this.width) * zoom, this.getCoords(start.y,this.height) * zoom); 
     for(var i = 1; i < length; i++){
         var p = points[i];
-        ctx.lineTo(this.getCoords(p.x) * zoom, this.getCoords(p.y) * zoom);
+        ctx.lineTo(this.getCoords(p.x,this.width) * zoom, this.getCoords(p.y,this.height) * zoom);
     }
     if(length > 2 && close){
       ctx.lineTo(start.x * zoom, start.y * zoom);
@@ -56,8 +56,8 @@ export default class Canvas extends Component {
     var {rotateSetting,zoom} = this.props;
     var {direction='clock',offset = 0} = rotateSetting;
     var ctx = this.ctx;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
     var p = this.getCoordsByPivot({x,y,r,pivot,type:'arc',lineWidth});
     ctx.save();
     ctx.beginPath();
@@ -84,10 +84,10 @@ export default class Canvas extends Component {
       rotate,pivot,angle,
     } = rect; 
     var {zoom} = this.props,ctx = this.ctx;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
-    width = this.getCoords(width);
-    height = this.getCoords(height);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
+    width = this.getCoords(width,this.width);
+    height = this.getCoords(height,this.height);
     var p = this.getCoordsByPivot({x,y,width,height,pivot,type:'rectangle'});
     ctx.save();
     ctx.beginPath();
@@ -119,8 +119,8 @@ export default class Canvas extends Component {
     var {zoom} = this.props;
     var ctx = this.ctx;
     var {textBaseLine = 'bottom',textAlign='center',fontSize=12,color='#000',text,rotate,unit,pivot,lineWidth = 1,x,y,angle} = obj;
-    x = this.getCoords(x);
-    y = this.getCoords(y);
+    x = this.getCoords(x,this.width);
+    y = this.getCoords(y,this.height);
     var p = this.getCoordsByPivot({x,y,pivot,type:'rectangle',lineWidth});
     ctx.save();
     ctx.beginPath();
@@ -194,9 +194,8 @@ export default class Canvas extends Component {
     return {x:X,y:Y};
   }
   setScreen(){
-    var {zoom,screenPosition,axisPosition} = this.props;
+    var {zoom,screenPosition} = this.props;
     var canvas = this.dom.current;
-    this.axisPosition = this.getAxisPosition(axisPosition);
     this.translate = { 
       x: (this.axisPosition.x) - (screenPosition[0] * zoom), 
       y: (this.axisPosition.y) - (screenPosition[1] * zoom * -1) 
@@ -212,14 +211,16 @@ export default class Canvas extends Component {
     var {grid,zoom} = this.props;
     var {width,height} = this; 
     var {x,y,color='#000'} = grid;
-    x = this.getCoords(x,width);
-    y = this.getCoords(y,height);
     var a = 100 * zoom;
-    var b = (x * zoom) + 'px';
-    var c = (y * zoom) + 'px';
+    var b = x?(this.getCoords(x,width) * zoom) + 'px':'100%';
+    var c = y?(this.getCoords(y,height) * zoom) + 'px':'100%';
+    var h1 = `linear-gradient(#000 0px,transparent 0px)`;
+    var v1 = `linear-gradient(90deg, #000 0px, transparent 0px)`;
+    var h2 = `linear-gradient(rgba(${color},0.3) 1px, transparent 1px)`;
+    var v2 = `linear-gradient(90deg, rgba(${color},0.3) 1px, transparent 1px)`;
     return {
-      backgroundImage:`linear-gradient(rgba(${color},0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(${color},0.5) 0px, transparent 0px),linear-gradient(rgba(${color},0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(${color},0.3) 1px, transparent 1px)`,
-      backgroundSize : `${a}px ${a}px,${a}px ${a}px,${b} ${c},${b} ${c}`
+      backgroundImage:`${h1},${v1},${h2},${v2}`,
+      backgroundSize : `${a}px ${a}px,${a}px ${a}px,${b} ${c},${b} ${c}`,
     }
   }
   update(){
@@ -227,6 +228,7 @@ export default class Canvas extends Component {
     var dom = this.dom.current;
     this.width = $(dom).width();
     this.height = $(dom).height();
+    this.axisPosition = this.axisPosition || this.getAxisPosition(this.props.axisPosition);
     if(getSize){getSize(this.width,this.height);}
     dom.width = this.width;
     dom.height = this.height;
