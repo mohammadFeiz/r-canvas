@@ -503,10 +503,8 @@ function (_Component) {
     value: function setScreen() {
       var _this$props3 = this.props,
           zoom = _this$props3.zoom,
-          screenPosition = _this$props3.screenPosition,
-          axisPosition = _this$props3.axisPosition;
+          screenPosition = _this$props3.screenPosition;
       var canvas = this.dom.current;
-      this.axisPosition = this.getAxisPosition(axisPosition);
       this.translate = {
         x: this.axisPosition.x - screenPosition[0] * zoom,
         y: this.axisPosition.y - screenPosition[1] * zoom * -1
@@ -534,13 +532,15 @@ function (_Component) {
           y = grid.y,
           _grid$color = grid.color,
           color = _grid$color === void 0 ? '#000' : _grid$color;
-      x = this.getCoords(x, width);
-      y = this.getCoords(y, height);
       var a = 100 * zoom;
-      var b = x * zoom + 'px';
-      var c = y * zoom + 'px';
+      var b = x ? this.getCoords(x, width) * zoom + 'px' : '100%';
+      var c = y ? this.getCoords(y, height) * zoom + 'px' : '100%';
+      var h1 = "linear-gradient(#000 0px,transparent 0px)";
+      var v1 = "linear-gradient(90deg, #000 0px, transparent 0px)";
+      var h2 = "linear-gradient(rgba(".concat(color, ",0.3) 1px, transparent 1px)");
+      var v2 = "linear-gradient(90deg, rgba(".concat(color, ",0.3) 1px, transparent 1px)");
       return {
-        backgroundImage: "linear-gradient(rgba(".concat(color, ",0.5) 0px,transparent 0px),linear-gradient(90deg, rgba(").concat(color, ",0.5) 0px, transparent 0px),linear-gradient(rgba(").concat(color, ",0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(").concat(color, ",0.3) 1px, transparent 1px)"),
+        backgroundImage: "".concat(h1, ",").concat(v1, ",").concat(h2, ",").concat(v2),
         backgroundSize: "".concat(a, "px ").concat(a, "px,").concat(a, "px ").concat(a, "px,").concat(b, " ").concat(c, ",").concat(b, " ").concat(c)
       };
     }
@@ -553,6 +553,7 @@ function (_Component) {
       var dom = this.dom.current;
       this.width = (0, _jquery.default)(dom).width();
       this.height = (0, _jquery.default)(dom).height();
+      this.axisPosition = this.axisPosition || this.getAxisPosition(this.props.axisPosition);
 
       if (getSize) {
         getSize(this.width, this.height);
