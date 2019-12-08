@@ -1,4 +1,4 @@
-import RActions from './r-actions';
+import RActions from 'r-actions';
 var {getValueByRange} = new RActions();
 export function getColor(color,ctx){
   if(typeof color === 'string'){return color;}

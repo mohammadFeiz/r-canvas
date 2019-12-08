@@ -11,7 +11,7 @@ exports.getAxisPosition = getAxisPosition;
 exports.getBackground = getBackground;
 exports.getCoordsByPivot = getCoordsByPivot;
 
-var _rActions = _interopRequireDefault(require("./r-actions"));
+var _rActions = _interopRequireDefault(require("r-actions"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

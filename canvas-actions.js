@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _rActions = _interopRequireDefault(require("./r-actions"));
+var _rActions = _interopRequireDefault(require("r-actions"));
 
 var _jquery = _interopRequireDefault(require("jquery"));
 

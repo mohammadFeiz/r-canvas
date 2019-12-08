@@ -1,4 +1,4 @@
-import RActions from './r-actions';
+import RActions from 'r-actions';
 import $ from 'jquery';
 var {eventHandler,getClient,getValueByRange} = new RActions();
 export default{
