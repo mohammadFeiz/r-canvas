@@ -1,7 +1,7 @@
 import React, { Component,createRef } from 'react';
 import $ from 'jquery';
 import {getColor,shadow,getTextAlign,getAxisPosition,getBackground,getCoordsByPivot} from './functions';
-import RActions from './r-actions';
+import RActions from 'r-actions';
 import canvasActions from './canvas-actions';
 var {eventHandler,getClient,getValueByRange} = new RActions();
 export default class Canvas extends Component {
