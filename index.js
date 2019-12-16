@@ -168,6 +168,7 @@ function (_Component) {
           y += parenty;
           x = getValueByRange(x, 0, this.width);
           y = getValueByRange(y, 0, this.height);
+          r = getValueByRange(r, this.width, this.height);
           var p = this.getCoordsByPivot({
             x: x,
             y: y,
@@ -182,7 +183,8 @@ function (_Component) {
 
           var param = {
             x: p.x,
-            y: p.y
+            y: p.y,
+            r: r
           };
         } else if (type === 'rectangle') {
           var _item$x3 = item.x,
@@ -366,7 +368,7 @@ function (_Component) {
           ea = -slice0 * this.PI;
         }
 
-        ctx.arc(_x2 * zoom, _y2 * zoom, r * zoom, sa, ea);
+        ctx.arc(_x2 * zoom, _y2 * zoom, obj.r * zoom, sa, ea);
         this.setStroke(stroke, lineWidth, dash) && ctx.stroke();
         this.setFill(fill) && ctx.fill();
       } else if (type === 'line') {
@@ -767,8 +769,8 @@ function (_Component) {
           className = _this$props10.className;
       return _react.default.createElement("canvas", {
         ref: this.dom,
-        id: id,
         className: className,
+        id: id,
         style: this.getStyle(style),
         onMouseDown: this.mouseDown.bind(this),
         onMouseMove: this.mouseMove.bind(this)
