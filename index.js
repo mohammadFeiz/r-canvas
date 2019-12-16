@@ -264,7 +264,6 @@ function (_Component) {
           y: y
         });
         angle && this.rotate(angle, center);
-        console.log(opacity);
         ctx.globalAlpha = opacity;
 
         if (type === 'group') {

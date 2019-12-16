@@ -39,22 +39,24 @@ export default class Canvas extends Component {
       opacity *= parentOpacity;
       if(type === 'group'){
         var {x = 0,y = 0} = item;
-        x += parentx; y += parenty;
+        x += parentx; y += parenty; 
       }
       if(type === 'line'){
         var {points,close} = item;
         if(points.length < 2){return false;}
         var {x,y} = points[0];  
-        x += parentx; y += parenty;
+        x += parentx; y += parenty; 
       }
       else if(type === 'arc'){
         var {x = 0,y = 0,r = 20} = item;  
         x += parentx; y += parenty;
         x = getValueByRange(x,0,this.width);
         y = getValueByRange(y,0,this.height);
+        r = getValueByRange(r,this.width,this.height);
+        
         var p = this.getCoordsByPivot({x,y,r,pivot,type:'arc'});
         var center = {x:p.x,y:p.y}; //مخصات مرکز
-        var param = {x:p.x,y:p.y};  
+        var param = {x:p.x,y:p.y,r};  
       }
       else if(type === 'rectangle'){
         var {x = 0,y = 0,width = 20,height = 20} = item; 
@@ -83,7 +85,6 @@ export default class Canvas extends Component {
       ctx.save(); ctx.beginPath();
       rotate && this.rotate(rotate,{x,y});
       angle && this.rotate(angle,center);
-      console.log(opacity);
       ctx.globalAlpha = opacity;
       
       if(type === 'group'){
@@ -109,7 +110,7 @@ export default class Canvas extends Component {
     if(!fill){return false;}
     var ctx = this.ctx;
     ctx.fillStyle = fill;
-    return true;
+    return true; 
   }
   ink({type,stroke,fill,text = 'Text',r,points,close,slice=[0,360],pivot,lineWidth = 1,dash},obj){
     if(!fill && !stroke){return;}
@@ -131,7 +132,7 @@ export default class Canvas extends Component {
       var sa,ea;
       if(direction === 'clock'){sa = slice0 * this.PI; ea = slice1 * this.PI;}
       else{sa = -slice1 * this.PI; ea = -slice0 * this.PI;}
-      ctx.arc(x * zoom, y * zoom, r * zoom, sa, ea);
+      ctx.arc(x * zoom, y * zoom, obj.r * zoom, sa, ea);
       this.setStroke(stroke,lineWidth,dash) && ctx.stroke();
       this.setFill(fill) && ctx.fill();
     }
@@ -316,8 +317,8 @@ export default class Canvas extends Component {
     return (
       <canvas 
         ref={this.dom} 
-        id={id} 
         className={className}
+        id={id} 
         style={this.getStyle(style)} 
         onMouseDown={this.mouseDown.bind(this)}
         onMouseMove={this.mouseMove.bind(this)}
