@@ -312,11 +312,12 @@ export default class Canvas extends Component {
     return {x,y,px:x * 100 / this.width,py:y * 100 / this.height};
   }
   render() {
-    var {id,style} = this.props;
+    var {id,style,className} = this.props;
     return (
       <canvas 
         ref={this.dom} 
         id={id} 
+        className={className}
         style={this.getStyle(style)} 
         onMouseDown={this.mouseDown.bind(this)}
         onMouseMove={this.mouseMove.bind(this)}

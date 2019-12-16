@@ -764,10 +764,12 @@ function (_Component) {
     value: function render() {
       var _this$props10 = this.props,
           id = _this$props10.id,
-          style = _this$props10.style;
+          style = _this$props10.style,
+          className = _this$props10.className;
       return _react.default.createElement("canvas", {
         ref: this.dom,
         id: id,
+        className: className,
         style: this.getStyle(style),
         onMouseDown: this.mouseDown.bind(this),
         onMouseMove: this.mouseMove.bind(this)
