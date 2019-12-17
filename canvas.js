@@ -169,9 +169,10 @@ export default class Canvas extends Component {
     var dom = this.dom.current;
     this.width = $(dom).width();
     this.height = $(dom).height();
+    var {x = '50%',y = '50%'} = this.props.axisPosition;
     this.axisPosition = {
-      x:getValueByRange(this.props.axisPosition.x,0,this.width),
-      y:getValueByRange(this.props.axisPosition.y,0,this.height)
+      x:getValueByRange(x,0,this.width),
+      y:getValueByRange(y,0,this.height)
     }
     if(getSize){getSize(this.width,this.height);}
     dom.width = this.width;

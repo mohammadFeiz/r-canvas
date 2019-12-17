@@ -440,9 +440,14 @@ function (_Component) {
       var dom = this.dom.current;
       this.width = (0, _jquery.default)(dom).width();
       this.height = (0, _jquery.default)(dom).height();
+      var _this$props$axisPosit = this.props.axisPosition,
+          _this$props$axisPosit2 = _this$props$axisPosit.x,
+          x = _this$props$axisPosit2 === void 0 ? '50%' : _this$props$axisPosit2,
+          _this$props$axisPosit3 = _this$props$axisPosit.y,
+          y = _this$props$axisPosit3 === void 0 ? '50%' : _this$props$axisPosit3;
       this.axisPosition = {
-        x: getValueByRange(this.props.axisPosition.x, 0, this.width),
-        y: getValueByRange(this.props.axisPosition.y, 0, this.height)
+        x: getValueByRange(x, 0, this.width),
+        y: getValueByRange(y, 0, this.height)
       };
 
       if (getSize) {
