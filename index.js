@@ -639,6 +639,8 @@ function (_Component) {
           py = _pivot$y === void 0 ? 0 : _pivot$y,
           w,
           h;
+      px = getValueByRange(px, this.width, this.height);
+      py = getValueByRange(py, this.width, this.height);
 
       if (type === 'rectangle') {
         var width = obj.width,

@@ -247,6 +247,8 @@ export default class Canvas extends Component {
     var {pivot,type,x,y} = obj;
     if(!pivot){return {x,y};}
     var {x:px = 0,y:py = 0} = pivot,w ,h;
+    px = getValueByRange(px,this.width,this.height);
+    py = getValueByRange(py,this.width,this.height);
     if(type === 'rectangle'){
       let {width,height} = obj;
       w = width; h = height;
