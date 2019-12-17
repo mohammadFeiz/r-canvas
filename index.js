@@ -265,7 +265,7 @@ function (_Component) {
           x: x,
           y: y
         });
-        angle && this.rotate(angle, center, true);
+        angle && this.rotate(angle, center);
         ctx.globalAlpha = opacity;
 
         if (type === 'group') {
@@ -353,13 +353,10 @@ function (_Component) {
         var _x2 = obj.x,
             _y2 = obj.y;
         var _rotateSetting$direct = rotateSetting.direction,
-            direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct,
-            _rotateSetting$offset = rotateSetting.offset,
-            offset = _rotateSetting$offset === void 0 ? 0 : _rotateSetting$offset;
+            direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct;
         var slice0 = getValueByRange(slice[0], 0, 360),
             slice1 = getValueByRange(slice[1], 0, 360);
         var sa, ea;
-        offset = offset * (direction === 'clockwise' ? -1 : 1);
 
         if (direction === 'clock') {
           sa = slice0;
@@ -369,7 +366,7 @@ function (_Component) {
           ea = -slice0;
         }
 
-        ctx.arc(_x2 * zoom, _y2 * zoom, obj.r * zoom, (sa + offset) * this.PI, (ea + offset) * this.PI);
+        ctx.arc(_x2 * zoom, _y2 * zoom, obj.r * zoom, sa * this.PI, ea * this.PI);
         this.setStroke(stroke, lineWidth, dash) && ctx.stroke();
         this.setFill(fill) && ctx.fill();
       } else if (type === 'line') {
@@ -404,20 +401,16 @@ function (_Component) {
     value: function rotate() {
       var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
       var center = arguments.length > 1 ? arguments[1] : undefined;
-      var preventOffset = arguments.length > 2 ? arguments[2] : undefined;
       var _this$props3 = this.props,
           zoom = _this$props3.zoom,
           rotateSetting = _this$props3.rotateSetting;
       var _rotateSetting$direct2 = rotateSetting.direction,
-          direction = _rotateSetting$direct2 === void 0 ? 'clock' : _rotateSetting$direct2,
-          _rotateSetting$offset2 = rotateSetting.offset,
-          offset = _rotateSetting$offset2 === void 0 ? 0 : _rotateSetting$offset2;
+          direction = _rotateSetting$direct2 === void 0 ? 'clock' : _rotateSetting$direct2;
 
-      if (offset === 0 && angle === 0) {
+      if (angle === 0) {
         return;
       }
 
-      angle += preventOffset ? 0 : offset;
       angle = angle * this.PI * (direction === 'clockwise' ? -1 : 1);
       var s = Math.sin(angle),
           c = Math.cos(angle);
@@ -801,7 +794,6 @@ Canvas.defaultProps = {
   screenPosition: [0, 0],
   items: [],
   rotateSetting: {
-    direction: 'clock',
-    offset: 0
+    direction: 'clock'
   }
 };

@@ -84,7 +84,7 @@ export default class Canvas extends Component {
       }
       ctx.save(); ctx.beginPath();
       rotate && this.rotate(rotate,{x,y});
-      angle && this.rotate(angle,center,true);
+      angle && this.rotate(angle,center);
       ctx.globalAlpha = opacity;
       
       if(type === 'group'){
@@ -127,13 +127,12 @@ export default class Canvas extends Component {
     }
     else if(type === 'arc'){
       let {x,y} = obj;
-      var {direction='clock',offset = 0} = rotateSetting;
+      var {direction='clock'} = rotateSetting;
       var slice0 = getValueByRange(slice[0],0,360),slice1 = getValueByRange(slice[1],0,360);
       var sa,ea;
-      offset = offset * (direction === 'clockwise'?-1:1);
       if(direction === 'clock'){sa = slice0; ea = slice1;}
       else{sa = -slice1; ea = -slice0;}
-      ctx.arc(x * zoom, y * zoom, obj.r * zoom, (sa + offset) * this.PI, (ea + offset) * this.PI);
+      ctx.arc(x * zoom, y * zoom, obj.r * zoom, sa * this.PI, ea * this.PI);
       this.setStroke(stroke,lineWidth,dash) && ctx.stroke();
       this.setFill(fill) && ctx.fill();
     }
@@ -151,11 +150,10 @@ export default class Canvas extends Component {
       this.setFill(fill) && ctx.fill();
     }
   }
-  rotate(angle = 0,center,preventOffset){
+  rotate(angle = 0,center){
     var {zoom,rotateSetting} = this.props;
-    var {direction = 'clock',offset = 0} = rotateSetting;
-    if(offset === 0 && angle === 0){return;}
-    angle+=preventOffset?0:offset;
+    var {direction = 'clock'} = rotateSetting;
+    if(angle === 0){return;}
     angle = angle * this.PI * (direction === 'clockwise'?-1:1);
     var s = Math.sin(angle),c = Math.cos(angle);
     var p = {x:center.x,y:-center.y};
@@ -332,5 +330,5 @@ export default class Canvas extends Component {
 }
 Canvas.defaultProps = {
   zoom:1,unit:'px',axisPosition:{x:'50%',y:'50%'},
-  screenPosition:[0,0],items:[],rotateSetting:{direction:'clock',offset:0}
+  screenPosition:[0,0],items:[],rotateSetting:{direction:'clock'}
 }
