@@ -265,7 +265,7 @@ function (_Component) {
           x: x,
           y: y
         });
-        angle && this.rotate(angle, center);
+        angle && this.rotate(angle, center, true);
         ctx.globalAlpha = opacity;
 
         if (type === 'group') {
@@ -359,16 +359,17 @@ function (_Component) {
         var slice0 = getValueByRange(slice[0], 0, 360),
             slice1 = getValueByRange(slice[1], 0, 360);
         var sa, ea;
+        offset = offset * (direction === 'clockwise' ? -1 : 1);
 
         if (direction === 'clock') {
-          sa = slice0 * this.PI;
-          ea = slice1 * this.PI;
+          sa = slice0;
+          ea = slice1;
         } else {
-          sa = -slice1 * this.PI;
-          ea = -slice0 * this.PI;
+          sa = -slice1;
+          ea = -slice0;
         }
 
-        ctx.arc(_x2 * zoom, _y2 * zoom, obj.r * zoom, sa, ea);
+        ctx.arc(_x2 * zoom, _y2 * zoom, obj.r * zoom, (sa + offset) * this.PI, (ea + offset) * this.PI);
         this.setStroke(stroke, lineWidth, dash) && ctx.stroke();
         this.setFill(fill) && ctx.fill();
       } else if (type === 'line') {
@@ -403,6 +404,7 @@ function (_Component) {
     value: function rotate() {
       var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
       var center = arguments.length > 1 ? arguments[1] : undefined;
+      var preventOffset = arguments.length > 2 ? arguments[2] : undefined;
       var _this$props3 = this.props,
           zoom = _this$props3.zoom,
           rotateSetting = _this$props3.rotateSetting;
@@ -415,7 +417,7 @@ function (_Component) {
         return;
       }
 
-      angle += offset;
+      angle += preventOffset ? 0 : offset;
       angle = angle * this.PI * (direction === 'clockwise' ? -1 : 1);
       var s = Math.sin(angle),
           c = Math.cos(angle);
