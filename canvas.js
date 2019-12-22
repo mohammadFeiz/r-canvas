@@ -53,7 +53,7 @@ export default class Canvas extends Component {
         x = getValueByRange(x,0,this.width);
         y = getValueByRange(y,0,this.height);
         r = getValueByRange(r,this.width,this.height);
-        
+        r = r < 0?0:r;
         var p = this.getCoordsByPivot({x,y,r,pivot,type:'arc'});
         var center = {x:p.x,y:p.y}; //مخصات مرکز
         var param = {x:p.x,y:p.y,r};  
