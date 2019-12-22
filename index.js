@@ -169,6 +169,7 @@ function (_Component) {
           x = getValueByRange(x, 0, this.width);
           y = getValueByRange(y, 0, this.height);
           r = getValueByRange(r, this.width, this.height);
+          r = r < 0 ? 0 : r;
           var p = this.getCoordsByPivot({
             x: x,
             y: y,
