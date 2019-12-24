@@ -43,7 +43,7 @@ export default class Canvas extends Component {
       }
       if(type === 'line'){
         var {points,close} = item;
-        if(points.length < 2){return false;}
+        if(points.length < 2){continue;}
         var {x,y} = points[0];  
         x += parentx; y += parenty; 
       }

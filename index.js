@@ -149,7 +149,7 @@ function (_Component) {
               close = item.close;
 
           if (points.length < 2) {
-            return false;
+            continue;
           }
 
           var _points$ = points[0],
