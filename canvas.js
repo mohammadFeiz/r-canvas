@@ -102,13 +102,17 @@ export default class Canvas extends Component {
         this.drawLine(parentx,parenty,points,coords,close,stroke,fill)
       }
       else if(item.r){
+        debugger;
         var {r,slice = [0,360]} = item;  
         r = getValueByRange(r,this.width,this.height);
         r = r < 0?0:r;
         item.r = r;
         var {direction='clock'} = rotateSetting;
         var startAngle = getValueByRange(slice[0],0,360),endAngle = getValueByRange(slice[1],0,360);
-        if(direction === 'clockwise'){startAngle = -slice[1]; endAngle = -slice[0];}
+        if(direction === 'clockwise'){
+          let a = startAngle,b = endAngle;
+          startAngle = -b; endAngle = -a;
+        }
         item.startAngle = startAngle; item.endAngle = endAngle;
         ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, startAngle * this.PI, endAngle * this.PI);
         stroke && ctx.stroke();

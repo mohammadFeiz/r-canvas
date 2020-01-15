@@ -293,6 +293,7 @@ function (_Component) {
 
           this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill);
         } else if (item.r) {
+          debugger;
           var _item3 = item,
               r = _item3.r,
               _item3$slice = _item3.slice,
@@ -306,8 +307,10 @@ function (_Component) {
               endAngle = getValueByRange(slice[1], 0, 360);
 
           if (direction === 'clockwise') {
-            startAngle = -slice[1];
-            endAngle = -slice[0];
+            var a = startAngle,
+                b = endAngle;
+            startAngle = -b;
+            endAngle = -a;
           }
 
           item.startAngle = startAngle;
