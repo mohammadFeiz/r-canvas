@@ -306,8 +306,8 @@ function (_Component) {
               endAngle = getValueByRange(slice[1], 0, 360);
 
           if (direction === 'clockwise') {
-            startAngle = -slice1;
-            endAngle = -slice0;
+            startAngle = -slice[1];
+            endAngle = -slice[0];
           }
 
           item.startAngle = startAngle;

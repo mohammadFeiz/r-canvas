@@ -108,7 +108,7 @@ export default class Canvas extends Component {
         item.r = r;
         var {direction='clock'} = rotateSetting;
         var startAngle = getValueByRange(slice[0],0,360),endAngle = getValueByRange(slice[1],0,360);
-        if(direction === 'clockwise'){startAngle = -slice1; endAngle = -slice0;}
+        if(direction === 'clockwise'){startAngle = -slice[1]; endAngle = -slice[0];}
         item.startAngle = startAngle; item.endAngle = endAngle;
         ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, startAngle * this.PI, endAngle * this.PI);
         stroke && ctx.stroke();
