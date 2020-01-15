@@ -1,11 +1,11 @@
 {
   "name": "r-canvas",
-  "version": "2.0.15",
+  "version": "2.0.16",
   "description": "react canvas library",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  },z
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mohammadFeiz/r-canvas.git"
