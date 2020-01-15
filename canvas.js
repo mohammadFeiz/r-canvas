@@ -102,7 +102,6 @@ export default class Canvas extends Component {
         this.drawLine(parentx,parenty,points,coords,close,stroke,fill)
       }
       else if(item.r){
-        debugger;
         var {r,slice = [0,360]} = item;  
         r = getValueByRange(r,this.width,this.height);
         r = r < 0?0:r;

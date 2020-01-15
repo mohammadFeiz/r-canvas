@@ -293,7 +293,6 @@ function (_Component) {
 
           this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill);
         } else if (item.r) {
-          debugger;
           var _item3 = item,
               r = _item3.r,
               _item3$slice = _item3.slice,
