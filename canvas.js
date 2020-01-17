@@ -11,6 +11,7 @@ export default class Canvas extends Component {
     this.isMobile = 'ontouchstart' in document.documentElement?true:false;
     $(window).on('resize',this.resize.bind(this));
     this.oc = 5;
+    this.mousePosition = [null,null]
   }
   resize(){
     this.timer = 0;
@@ -40,48 +41,57 @@ export default class Canvas extends Component {
   }
   getItem(item){  
     if(item.array && item.count){
-      var count = typeof item.count === 'function'?item.count(item):item.count;
-      var array = []; 
-      for(var i = 0; i < count; i++){array.push(item.array(i,item))}
-      return {items:array};
+      let {x = 0,y = 0,count,array,pivot} = item;
+      count = typeof count === 'function'?count(item):count;
+      var arr = []; 
+      for(var i = 0; i < count; i++){arr.push(array(i,item))}
+      return {items:arr,x,y,pivot};
     }
-    if(item.arcPoints){
+    if(item.arcPoints){ 
       let {arcPoints,pivot = []} = item;
       var arc = getArcBy3Points(...arcPoints);
       item.r = arc.r; item.slice = arc.slice;
       item.pivot = [-arc.x + (pivot[0] || 0),-arc.y + (pivot[1] || 0)]
     }
     if(item.trianglePoints){ 
-      var [p1,p2] = item.trianglePoints;
-      var width = item.triangleWidth;
+      let {trianglePoints,triangleWidth,corner = []} = item;
+      var [p1,p2] = trianglePoints;
+      var width = triangleWidth;
       var t1 = getPrependicularPointFromLine(p1,p2,'start',width/2)
       var t2 = getPrependicularPointFromLine(p1,p2,'start',-width/2)
-      item.points = [[t1.x,t1.y],[t2.x,t2.y],p2]
+      
+      item.points = [
+        [p1[0],p1[1],corner[0]],
+        [t1.x,t1.y,corner[1]],
+        [p2[0],p2[1],corner[2]],
+        [t2.x,t2.y],
+        p1
+      ]
 
     }
     return item; 
   }
-  
+  getExtension(item){
+    let {ext,parameter} = item;
+    if(!ext){return item;}
+    let {extensions} = this.props;
+    return $.extend({},extensions[ext](parameter),item); 
+  }
   draw(items = this.props.items,parent = {}){  
     //مشخصات پرنت رو بگیر
     var {x:parentx = 0,y:parenty = 0,rotate:parentrotate = 0,opacity:parentOpacity = 1} = parent;
     var {rotateSetting,zoom,extensions} = this.props,ctx = this.ctx;
     for(var i = 0; i < items.length; i++){
-      let item = items[i]
-      item = this.getItem(item.ext?$.extend({},extensions[item.ext],item):item);
+      let item = this.getItem(items[i]);
+      item = this.getExtension(item);
       if(item.show === false){continue;}  
       //پارامتر های مشترک رو از آیتم بگیر
       let {showPivot,lineJoin = 'miter',lineCap = 'butt',rotate = 0,pivot,angle = 0,opacity = 1,x = 0,y = 0,fill,stroke,dash,lineWidth = 1} = item;  
       x = getValueByRange(x,0,this.width) + parentx;
       y = getValueByRange(y,0,this.height) + parenty;   
-      item.x = x;
-      item.y = y;
-      item.lineWidth = lineWidth;
-      rotate = getValueByRange(rotate,0,360);
-      item.rotate = rotate;
+      rotate = getValueByRange(rotate,0,360) + parentrotate;
       opacity *= parentOpacity;
       let coords = this.getCoordsByPivot({x,y,pivot});
-      item.coords = coords;
       if(!fill && !stroke){stroke = '#000'; item.stroke = '#000';}
       ctx.save(); ctx.beginPath(); 
       rotate && this.rotate(rotate,{x,y});
@@ -96,13 +106,21 @@ export default class Canvas extends Component {
       ctx.fillStyle = fill === 'random'?this.getRandomColor().color:this.getColor(fill);
     
       if(item.items){this.draw(item.items,{x:coords.x,y:coords.y,rotate,opacity});}
+      else if(item.width || item.height){
+        var {width = 20,height = 20,corner = []} = item; 
+        width = getValueByRange(width,0,this.width);
+        height = getValueByRange(height,0,this.height);
+        let {x,y} = coords,[c0 = 0,c1 = 0,c2 = 0,c3 = 0] = corner;
+        var points = [[x + width / 2,y],[x + width,y,c1],[x + width,y + height,c2],[x,y + height,c3],[x,y,c0],[x + width / 2,y,c1]]
+        this.drawLine(parentx,parenty,points,{x:0,y:0},close,stroke,fill)
+      }
       else if(item.points){
         let {points,close} = item;
         if(points.length < 1){continue;} 
-        this.drawLine(parentx,parenty,points,coords,close,stroke,fill)
+        this.drawLine(parentx,parenty,points,coords,close,stroke,fill,item)
       }
       else if(item.r){
-        var {r,slice = [0,360]} = item;  
+        var {r,slice = [0,360]} = item;   
         r = getValueByRange(r,this.width,this.height);
         r = r < 0?0:r;
         item.r = r;
@@ -117,15 +135,8 @@ export default class Canvas extends Component {
         stroke && ctx.stroke();
         fill && ctx.fill(); 
       }
-      else if(item.width || item.height){
-        var {width = 20,height = 20,corner = []} = item; 
-        width = getValueByRange(width,0,this.width);
-        height = getValueByRange(height,0,this.height);
-        let {x,y} = coords,[c0 = 0,c1 = 0,c2 = 0,c3 = 0] = corner;
-        var points = [[x + width / 2,y],[x + width,y,c1],[x + width,y + height,c2],[x,y + height,c3],[x,y,c0],[x + width / 2,y,c1]]
-        this.drawLine(parentx,parenty,points,{x:0,y:0},close,stroke,fill)
-      }
-      else if(item.text){
+      
+      else if(item.text || item.text === 0){
         var {align=[0,0],fontSize=12,text = 'Text'} = item;
         var [textAlign,textBaseline] = this.getTextAlign(align);
         ctx.textAlign = textAlign;
@@ -135,40 +146,46 @@ export default class Canvas extends Component {
         fill && ctx.fillText(text,coords.x * zoom,coords.y * zoom);
       }
       if(showPivot){this.showPivot(x,y)}
+      var X = this.mousePosition[0] + this.axisPosition[0];
+      var Y = this.mousePosition[1] + this.axisPosition[1];
+      item.inPath = false;
+      item.inStroke = false;
+      if(item.fill && ctx.isPointInPath(X,Y)){item.inPath = true;}
+      else if(item.stroke && ctx.isPointInStroke(X,Y)){item.inStroke = true;}
       ctx.closePath(); ctx.restore();
       this.items.push(item);
       
     }
   }
-  drawLine(parentx,parenty,points,coords,close,stroke,fill){
+  drawLine(parentx,parenty,points,coords,close,stroke,fill,item){
     var {zoom} = this.props;
     var start = [getValueByRange(points[0][0],0,this.width) + coords.x,getValueByRange(points[0][1],0,this.height) + coords.y];
     this.ctx.moveTo(start[0] * zoom,start[1] * zoom ); 
+    var beforePoint = points[0];
     for(var i = 1; i < points.length; i++){
-      let [x,y,r] = this.getPoint(points[i],points[i - 1]);
+      let [x,y,r] = this.getPoint(points[i],beforePoint); 
+      beforePoint = [x,y];
       let point = [getValueByRange(x,0,this.width) + coords.x,getValueByRange(y,0,this.height) + coords.y];
       if(r){
         let [x,y] = points[i + 1]?this.getPoint(points[i + 1],points[i]):points[0];
         let nextPoint = [getValueByRange(x,0,this.width) + coords.x,getValueByRange(y,0,this.height) + coords.y];
-        this.ctx.arcTo(point[0] * zoom,point[1] * zoom,nextPoint[0] * zoom,nextPoint[1] * zoom,r)
-      }
+        this.ctx.arcTo(point[0] * zoom,point[1] * zoom,nextPoint[0] * zoom,nextPoint[1] * zoom,r * zoom)
+      } 
       else{this.ctx.lineTo(point[0] * zoom,point[1]  * zoom);}
     }
     if(points.length > 2 && close){this.ctx.lineTo(start[0] * zoom, start[1] * zoom);}
     stroke && this.ctx.stroke();
     fill && this.ctx.fill();
+    
+    
   }
   showPivot(x,y){
     var ctx = this.ctx;
     ctx.beginPath(); ctx.arc(x,y,10,0,360*Math.PI / 180); ctx.moveTo(x - 15,y); ctx.lineTo(x + 15,y); ctx.moveTo(x,y-15); ctx.lineTo(x,y + 15); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,100,0,.3)'; ctx.stroke();  ctx.closePath();
   }
   getPoint(point,beforePoint){
-    if(point[0] === undefined || point[1] === undefined){
-      var p = getLineBySLA(beforePoint,point.length,point.angle).p2;
-      point[0] = p[0]; point[1] = p[1];
-      return point
-    }
-    return point;
+    if(Array.isArray(point)){return point;}
+    return getLineBySLA(beforePoint,point.length,point.angle).p2; 
   }
   rotate(angle = 0,center){
     var {zoom,rotateSetting} = this.props;
@@ -312,77 +329,32 @@ export default class Canvas extends Component {
   }
   mouseDown(e){
     this.mousePosition = this.getMousePosition(e);
-    //var item = this.searchItem();
+    if(this.props.selectable){
+      this.update();
+      this.searchItem(); 
+    }
     var {mouseDown,onpan,getMousePosition} = this.props;
     if(getMousePosition){getMousePosition(this.mousePosition);}
     if(mouseDown){mouseDown(e);} 
     if(onpan){this.panmousedown(e);} 
   } 
-  searchArc(item){
-    var start = [item.x,item.y];
-    var end = [item.coords.x,item.coords.y];
-    var length = getLength(start,end);
-    var angle = getAngle(start,end) + item.rotate;
-    var coords = getLineBySLA(start,length,angle)[1];
-    var length = getLength(coords,this.mousePosition);
-    var lineWidth = !item.stroke?0:item.lineWidth;
-    if(length > item.r + (lineWidth / 2)){return false}  
-    if(!item.fill && length < item.r - (lineWidth / 2)){ return false;}
-    var s = item.startAngle,e = item.endAngle;
-    while(s > 360){s -= 360;}
-    while(s < 0){s += 360}
-    var delta = e - s;
-    if(delta === 360){return true;}
-    if(delta === 0){return false;}
-    var min = Math.min(e,s);
-    var max = Math.max(e,s);
-    angle = getAngle(coords,this.mousePosition)
-    if(delta < 0){
-      if(angle > min && angle < max){return false;}
-      return true;
-    }
-    else{
-      if(angle >= min && angle <= max){return true;}
-      return false;
-    }
-    return true; 
-  }
-  searchLineUnit(p1,p2,lineWidth){
-    var length = getLength(p1,p2);
-    var length1 = getLength(p1,this.mousePosition);
-    if(length1 > length + lineWidth / 2){return false;}
-    var length2 = getLength(p2,this.mousePosition);
-    if(length2 > length + lineWidth / 2){return false;} 
-    var prep = getPrependicularPointToLine(p1,p2,this.mousePosition);
-    length = getLength(prep,this.mousePosition);
-    if(length > lineWidth / 2){return false}
-    return true;
-  }
-  searchLine(line){
-    for(var i = 0; i < line.points.length - 1; i++){
-      var p1 = line.points[i];
-      var p2 = line.points[i + 1];
-      var unit = this.searchLineUnit(p1,p2,line.lineWidth);
-      if(unit){return true}
-    }
-    if(line.close){
-      return this.searchLineUnit(line.points[line.points.length - 1],line.points[0],line.lineWidth)
-    }
-  }
   arcTest([x,y]){
     this.ctx.beginPath();
     this.ctx.arc(x,y,3,0,360*Math.PI / 180);
     this.ctx.fill();
-    this.ctx.closePath();
-    
+    this.ctx.closePath();  
   }
   searchItem(){
     for(var i = this.items.length - 1; i >= 0; i--){
       var item = this.items[i];
-      if(item.AxIs){continue;}
-      if(item.r !== undefined && this.searchArc(item)){item.callback(item)}
-      else if(item.points){
-        if(this.searchLine(item)){item.callback(item)}
+      if(!item.callback){continue;}
+      if(item.fill && item.inPath){
+        item.callback(item);
+        return;
+      }
+      if(item.stroke && item.inStroke){
+        item.callback(item);
+        return;
       }
     }
   }
@@ -414,6 +386,6 @@ export default class Canvas extends Component {
   }
 }
 Canvas.defaultProps = {
-  zoom:1,unit:'px',axisPosition:['50%','50%'],
+  zoom:1,unit:'px',axisPosition:['50%','50%'],selectable:false,
   screenPosition:[0,0],items:[],rotateSetting:{direction:'clock'}
 }

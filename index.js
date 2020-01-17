@@ -78,6 +78,7 @@ function (_Component) {
     _this.isMobile = 'ontouchstart' in document.documentElement ? true : false;
     (0, _jquery.default)(window).on('resize', _this.resize.bind(_assertThisInitialized(_this)));
     _this.oc = 5;
+    _this.mousePosition = [null, null];
     return _this;
   }
 
@@ -151,42 +152,70 @@ function (_Component) {
     key: "getItem",
     value: function getItem(item) {
       if (item.array && item.count) {
-        var count = typeof item.count === 'function' ? item.count(item) : item.count;
-        var array = [];
+        var _item$x = item.x,
+            x = _item$x === void 0 ? 0 : _item$x,
+            _item$y = item.y,
+            y = _item$y === void 0 ? 0 : _item$y,
+            count = item.count,
+            array = item.array,
+            pivot = item.pivot;
+        count = typeof count === 'function' ? count(item) : count;
+        var arr = [];
 
         for (var i = 0; i < count; i++) {
-          array.push(item.array(i, item));
+          arr.push(array(i, item));
         }
 
         return {
-          items: array
+          items: arr,
+          x: x,
+          y: y,
+          pivot: pivot
         };
       }
 
       if (item.arcPoints) {
         var arcPoints = item.arcPoints,
             _item$pivot = item.pivot,
-            pivot = _item$pivot === void 0 ? [] : _item$pivot;
+            _pivot2 = _item$pivot === void 0 ? [] : _item$pivot;
 
         var arc = _rGeometric.getArcBy3Points.apply(void 0, _toConsumableArray(arcPoints));
 
         item.r = arc.r;
         item.slice = arc.slice;
-        item.pivot = [-arc.x + (pivot[0] || 0), -arc.y + (pivot[1] || 0)];
+        item.pivot = [-arc.x + (_pivot2[0] || 0), -arc.y + (_pivot2[1] || 0)];
       }
 
       if (item.trianglePoints) {
-        var _item$trianglePoints = _slicedToArray(item.trianglePoints, 2),
-            p1 = _item$trianglePoints[0],
-            p2 = _item$trianglePoints[1];
+        var trianglePoints = item.trianglePoints,
+            triangleWidth = item.triangleWidth,
+            _item$corner = item.corner,
+            corner = _item$corner === void 0 ? [] : _item$corner;
 
-        var width = item.triangleWidth;
+        var _trianglePoints = _slicedToArray(trianglePoints, 2),
+            p1 = _trianglePoints[0],
+            p2 = _trianglePoints[1];
+
+        var width = triangleWidth;
         var t1 = (0, _rGeometric.getPrependicularPointFromLine)(p1, p2, 'start', width / 2);
         var t2 = (0, _rGeometric.getPrependicularPointFromLine)(p1, p2, 'start', -width / 2);
-        item.points = [[t1.x, t1.y], [t2.x, t2.y], p2];
+        item.points = [[p1[0], p1[1], corner[0]], [t1.x, t1.y, corner[1]], [p2[0], p2[1], corner[2]], [t2.x, t2.y], p1];
       }
 
       return item;
+    }
+  }, {
+    key: "getExtension",
+    value: function getExtension(item) {
+      var ext = item.ext,
+          parameter = item.parameter;
+
+      if (!ext) {
+        return item;
+      }
+
+      var extensions = this.props.extensions;
+      return _jquery.default.extend({}, extensions[ext](parameter), item);
     }
   }, {
     key: "draw",
@@ -209,8 +238,8 @@ function (_Component) {
           ctx = this.ctx;
 
       for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        item = this.getItem(item.ext ? _jquery.default.extend({}, extensions[item.ext], item) : item);
+        var item = this.getItem(items[i]);
+        item = this.getExtension(item);
 
         if (item.show === false) {
           continue;
@@ -230,10 +259,10 @@ function (_Component) {
             angle = _item$angle === void 0 ? 0 : _item$angle,
             _item$opacity = _item.opacity,
             opacity = _item$opacity === void 0 ? 1 : _item$opacity,
-            _item$x = _item.x,
-            x = _item$x === void 0 ? 0 : _item$x,
-            _item$y = _item.y,
-            y = _item$y === void 0 ? 0 : _item$y,
+            _item$x2 = _item.x,
+            x = _item$x2 === void 0 ? 0 : _item$x2,
+            _item$y2 = _item.y,
+            y = _item$y2 === void 0 ? 0 : _item$y2,
             fill = _item.fill,
             stroke = _item.stroke,
             dash = _item.dash,
@@ -241,18 +270,13 @@ function (_Component) {
             lineWidth = _item$lineWidth === void 0 ? 1 : _item$lineWidth;
         x = getValueByRange(x, 0, this.width) + parentx;
         y = getValueByRange(y, 0, this.height) + parenty;
-        item.x = x;
-        item.y = y;
-        item.lineWidth = lineWidth;
-        rotate = getValueByRange(rotate, 0, 360);
-        item.rotate = rotate;
+        rotate = getValueByRange(rotate, 0, 360) + parentrotate;
         opacity *= parentOpacity;
         var coords = this.getCoordsByPivot({
           x: x,
           y: y,
           pivot: pivot
         });
-        item.coords = coords;
 
         if (!fill && !stroke) {
           stroke = '#000';
@@ -282,49 +306,14 @@ function (_Component) {
             rotate: rotate,
             opacity: opacity
           });
-        } else if (item.points) {
-          var _item2 = item,
-              _points = _item2.points,
-              _close = _item2.close;
-
-          if (_points.length < 1) {
-            continue;
-          }
-
-          this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill);
-        } else if (item.r) {
-          var _item3 = item,
-              r = _item3.r,
-              _item3$slice = _item3.slice,
-              slice = _item3$slice === void 0 ? [0, 360] : _item3$slice;
-          r = getValueByRange(r, this.width, this.height);
-          r = r < 0 ? 0 : r;
-          item.r = r;
-          var _rotateSetting$direct = rotateSetting.direction,
-              direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct;
-          var startAngle = getValueByRange(slice[0], 0, 360),
-              endAngle = getValueByRange(slice[1], 0, 360);
-
-          if (direction === 'clockwise') {
-            var a = startAngle,
-                b = endAngle;
-            startAngle = -b;
-            endAngle = -a;
-          }
-
-          item.startAngle = startAngle;
-          item.endAngle = endAngle;
-          ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, startAngle * this.PI, endAngle * this.PI);
-          stroke && ctx.stroke();
-          fill && ctx.fill();
         } else if (item.width || item.height) {
-          var _item4 = item,
-              _item4$width = _item4.width,
-              width = _item4$width === void 0 ? 20 : _item4$width,
-              _item4$height = _item4.height,
-              height = _item4$height === void 0 ? 20 : _item4$height,
-              _item4$corner = _item4.corner,
-              corner = _item4$corner === void 0 ? [] : _item4$corner;
+          var _item2 = item,
+              _item2$width = _item2.width,
+              width = _item2$width === void 0 ? 20 : _item2$width,
+              _item2$height = _item2.height,
+              height = _item2$height === void 0 ? 20 : _item2$height,
+              _item2$corner = _item2.corner,
+              corner = _item2$corner === void 0 ? [] : _item2$corner;
           width = getValueByRange(width, 0, this.width);
           height = getValueByRange(height, 0, this.height);
 
@@ -345,7 +334,42 @@ function (_Component) {
             x: 0,
             y: 0
           }, close, stroke, fill);
-        } else if (item.text) {
+        } else if (item.points) {
+          var _item3 = item,
+              _points = _item3.points,
+              _close = _item3.close;
+
+          if (_points.length < 1) {
+            continue;
+          }
+
+          this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill, item);
+        } else if (item.r) {
+          var _item4 = item,
+              r = _item4.r,
+              _item4$slice = _item4.slice,
+              slice = _item4$slice === void 0 ? [0, 360] : _item4$slice;
+          r = getValueByRange(r, this.width, this.height);
+          r = r < 0 ? 0 : r;
+          item.r = r;
+          var _rotateSetting$direct = rotateSetting.direction,
+              direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct;
+          var startAngle = getValueByRange(slice[0], 0, 360),
+              endAngle = getValueByRange(slice[1], 0, 360);
+
+          if (direction === 'clockwise') {
+            var a = startAngle,
+                b = endAngle;
+            startAngle = -b;
+            endAngle = -a;
+          }
+
+          item.startAngle = startAngle;
+          item.endAngle = endAngle;
+          ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, startAngle * this.PI, endAngle * this.PI);
+          stroke && ctx.stroke();
+          fill && ctx.fill();
+        } else if (item.text || item.text === 0) {
           var _item5 = item,
               _item5$align = _item5.align,
               align = _item5$align === void 0 ? [0, 0] : _item5$align,
@@ -370,6 +394,17 @@ function (_Component) {
           this.showPivot(x, y);
         }
 
+        var X = this.mousePosition[0] + this.axisPosition[0];
+        var Y = this.mousePosition[1] + this.axisPosition[1];
+        item.inPath = false;
+        item.inStroke = false;
+
+        if (item.fill && ctx.isPointInPath(X, Y)) {
+          item.inPath = true;
+        } else if (item.stroke && ctx.isPointInStroke(X, Y)) {
+          item.inStroke = true;
+        }
+
         ctx.closePath();
         ctx.restore();
         this.items.push(item);
@@ -377,18 +412,20 @@ function (_Component) {
     }
   }, {
     key: "drawLine",
-    value: function drawLine(parentx, parenty, points, coords, close, stroke, fill) {
+    value: function drawLine(parentx, parenty, points, coords, close, stroke, fill, item) {
       var zoom = this.props.zoom;
       var start = [getValueByRange(points[0][0], 0, this.width) + coords.x, getValueByRange(points[0][1], 0, this.height) + coords.y];
       this.ctx.moveTo(start[0] * zoom, start[1] * zoom);
+      var beforePoint = points[0];
 
       for (var i = 1; i < points.length; i++) {
-        var _this$getPoint = this.getPoint(points[i], points[i - 1]),
+        var _this$getPoint = this.getPoint(points[i], beforePoint),
             _this$getPoint2 = _slicedToArray(_this$getPoint, 3),
             x = _this$getPoint2[0],
             y = _this$getPoint2[1],
             r = _this$getPoint2[2];
 
+        beforePoint = [x, y];
         var point = [getValueByRange(x, 0, this.width) + coords.x, getValueByRange(y, 0, this.height) + coords.y];
 
         if (r) {
@@ -398,7 +435,7 @@ function (_Component) {
               _y2 = _ref4[1];
 
           var nextPoint = [getValueByRange(_x2, 0, this.width) + coords.x, getValueByRange(_y2, 0, this.height) + coords.y];
-          this.ctx.arcTo(point[0] * zoom, point[1] * zoom, nextPoint[0] * zoom, nextPoint[1] * zoom, r);
+          this.ctx.arcTo(point[0] * zoom, point[1] * zoom, nextPoint[0] * zoom, nextPoint[1] * zoom, r * zoom);
         } else {
           this.ctx.lineTo(point[0] * zoom, point[1] * zoom);
         }
@@ -429,14 +466,11 @@ function (_Component) {
   }, {
     key: "getPoint",
     value: function getPoint(point, beforePoint) {
-      if (point[0] === undefined || point[1] === undefined) {
-        var p = (0, _rGeometric.getLineBySLA)(beforePoint, point.length, point.angle).p2;
-        point[0] = p[0];
-        point[1] = p[1];
+      if (Array.isArray(point)) {
         return point;
       }
 
-      return point;
+      return (0, _rGeometric.getLineBySLA)(beforePoint, point.length, point.angle).p2;
     }
   }, {
     key: "rotate",
@@ -717,7 +751,12 @@ function (_Component) {
   }, {
     key: "mouseDown",
     value: function mouseDown(e) {
-      this.mousePosition = this.getMousePosition(e); //var item = this.searchItem();
+      this.mousePosition = this.getMousePosition(e);
+
+      if (this.props.selectable) {
+        this.update();
+        this.searchItem();
+      }
 
       var _this$props7 = this.props,
           mouseDown = _this$props7.mouseDown,
@@ -734,108 +773,6 @@ function (_Component) {
 
       if (onpan) {
         this.panmousedown(e);
-      }
-    }
-  }, {
-    key: "searchArc",
-    value: function searchArc(item) {
-      var start = [item.x, item.y];
-      var end = [item.coords.x, item.coords.y];
-      var length = (0, _rGeometric.getLength)(start, end);
-      var angle = (0, _rGeometric.getAngle)(start, end) + item.rotate;
-      var coords = (0, _rGeometric.getLineBySLA)(start, length, angle)[1];
-      var length = (0, _rGeometric.getLength)(coords, this.mousePosition);
-      var lineWidth = !item.stroke ? 0 : item.lineWidth;
-
-      if (length > item.r + lineWidth / 2) {
-        return false;
-      }
-
-      if (!item.fill && length < item.r - lineWidth / 2) {
-        return false;
-      }
-
-      var s = item.startAngle,
-          e = item.endAngle;
-
-      while (s > 360) {
-        s -= 360;
-      }
-
-      while (s < 0) {
-        s += 360;
-      }
-
-      var delta = e - s;
-
-      if (delta === 360) {
-        return true;
-      }
-
-      if (delta === 0) {
-        return false;
-      }
-
-      var min = Math.min(e, s);
-      var max = Math.max(e, s);
-      angle = (0, _rGeometric.getAngle)(coords, this.mousePosition);
-
-      if (delta < 0) {
-        if (angle > min && angle < max) {
-          return false;
-        }
-
-        return true;
-      } else {
-        if (angle >= min && angle <= max) {
-          return true;
-        }
-
-        return false;
-      }
-
-      return true;
-    }
-  }, {
-    key: "searchLineUnit",
-    value: function searchLineUnit(p1, p2, lineWidth) {
-      var length = (0, _rGeometric.getLength)(p1, p2);
-      var length1 = (0, _rGeometric.getLength)(p1, this.mousePosition);
-
-      if (length1 > length + lineWidth / 2) {
-        return false;
-      }
-
-      var length2 = (0, _rGeometric.getLength)(p2, this.mousePosition);
-
-      if (length2 > length + lineWidth / 2) {
-        return false;
-      }
-
-      var prep = (0, _rGeometric.getPrependicularPointToLine)(p1, p2, this.mousePosition);
-      length = (0, _rGeometric.getLength)(prep, this.mousePosition);
-
-      if (length > lineWidth / 2) {
-        return false;
-      }
-
-      return true;
-    }
-  }, {
-    key: "searchLine",
-    value: function searchLine(line) {
-      for (var i = 0; i < line.points.length - 1; i++) {
-        var p1 = line.points[i];
-        var p2 = line.points[i + 1];
-        var unit = this.searchLineUnit(p1, p2, line.lineWidth);
-
-        if (unit) {
-          return true;
-        }
-      }
-
-      if (line.close) {
-        return this.searchLineUnit(line.points[line.points.length - 1], line.points[0], line.lineWidth);
       }
     }
   }, {
@@ -856,16 +793,18 @@ function (_Component) {
       for (var i = this.items.length - 1; i >= 0; i--) {
         var item = this.items[i];
 
-        if (item.AxIs) {
+        if (!item.callback) {
           continue;
         }
 
-        if (item.r !== undefined && this.searchArc(item)) {
+        if (item.fill && item.inPath) {
           item.callback(item);
-        } else if (item.points) {
-          if (this.searchLine(item)) {
-            item.callback(item);
-          }
+          return;
+        }
+
+        if (item.stroke && item.inStroke) {
+          item.callback(item);
+          return;
         }
       }
     }
@@ -921,6 +860,7 @@ Canvas.defaultProps = {
   zoom: 1,
   unit: 'px',
   axisPosition: ['50%', '50%'],
+  selectable: false,
   screenPosition: [0, 0],
   items: [],
   rotateSetting: {
