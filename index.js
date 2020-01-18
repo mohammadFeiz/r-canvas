@@ -21,8 +21,6 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -38,6 +36,8 @@ function _nonIterableRest() { throw new TypeError("Invalid attempt to destructur
 function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!_instanceof(instance, Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -78,11 +78,120 @@ function (_Component) {
     _this.isMobile = 'ontouchstart' in document.documentElement ? true : false;
     (0, _jquery.default)(window).on('resize', _this.resize.bind(_assertThisInitialized(_this)));
     _this.oc = 5;
-    _this.mousePosition = [null, null];
+    _this.mousePosition = [Infinity, Infinity];
+
+    if (_this.props.debugMode) {
+      _this.debug();
+    }
+
     return _this;
   }
 
   _createClass(Canvas, [{
+    key: "debug",
+    value: function debug() {
+      var _this$props = this.props,
+          axisPosition = _this$props.axisPosition,
+          screenPosition = _this$props.screenPosition,
+          grid = _this$props.grid,
+          items = _this$props.items; //check axisPosition
+
+      var type, x, y;
+
+      if (!Array.isArray(axisPosition)) {
+        console.error('axisPosition must be an array');
+      }
+
+      x = axisPosition[0];
+      y = axisPosition[1];
+
+      if (typeof x !== 'string' && typeof x !== 'number') {
+        console.error('axisPosition[0] must be number or string');
+      }
+
+      if (typeof y !== 'string' && typeof y !== 'number') {
+        console.error('axisPosition[1] must be number or string');
+      }
+
+      if (!Array.isArray(screenPosition)) {
+        console.error('screenPosition must be an array');
+      }
+
+      x = screenPosition[0];
+      y = screenPosition[1];
+
+      if (typeof x !== 'string' && typeof x !== 'number') {
+        console.error('screenPosition[0] must be number or string');
+      }
+
+      if (typeof y !== 'string' && typeof y !== 'number') {
+        console.error('screenPosition[1] must be number or string');
+      }
+
+      if (!Array.isArray(grid)) {
+        console.error('grid must be an array');
+      }
+
+      x = grid[0];
+      y = grid[1];
+
+      if (typeof x !== 'string' && typeof x !== 'number') {
+        console.error('grid[0] must be number or string');
+      }
+
+      if (typeof y !== 'string' && typeof y !== 'number') {
+        console.error('grid[1] must be number or string');
+      }
+
+      if (!Array.isArray(items)) {
+        console.error('items must be an array');
+      }
+
+      this.analizItems(items);
+    }
+  }, {
+    key: "analizItems",
+    value: function analizItems(items) {
+      var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+      for (var i = 0; i < items.length; i++) {
+        var _items$i = items[i],
+            points = _items$i.points,
+            pivot = _items$i.pivot;
+        var addr = index + '.items[' + i + ']';
+
+        if (pivot && !Array.isArray(pivot)) {
+          console.error("".concat(addr, ":pivot must be an array"));
+        }
+
+        if (points) {
+          if (!Array.isArray(points)) {
+            console.error("".concat(addr, ":points must be an array"));
+          }
+
+          for (var j = 0; j < points.length; j++) {
+            var point = points[j];
+
+            if (_typeof(point) !== 'object') {
+              console.error("".concat(addr, ":points[").concat(j, "] must be object or array"));
+            }
+
+            if (!Array.isArray(point)) {
+              if (point.length === undefined) {
+                console.error("".concat(addr, ":points[").concat(j, "].length is not defined"));
+              }
+
+              if (point.angle === undefined) {
+                console.error("".concat(addr, ":points[").concat(j, "].angle is not defined"));
+              }
+            }
+          }
+        } else if (item.items) {
+          this.analizItems(item.items, addr);
+        }
+      }
+    }
+  }, {
     key: "resize",
     value: function resize() {
       var _this2 = this;
@@ -231,43 +340,44 @@ function (_Component) {
           parentrotate = _parent$rotate === void 0 ? 0 : _parent$rotate,
           _parent$opacity = parent.opacity,
           parentOpacity = _parent$opacity === void 0 ? 1 : _parent$opacity;
-      var _this$props = this.props,
-          rotateSetting = _this$props.rotateSetting,
-          zoom = _this$props.zoom,
-          extensions = _this$props.extensions,
+      var _this$props2 = this.props,
+          rotateSetting = _this$props2.rotateSetting,
+          zoom = _this$props2.zoom,
+          extensions = _this$props2.extensions,
           ctx = this.ctx;
 
       for (var i = 0; i < items.length; i++) {
-        var item = this.getItem(items[i]);
-        item = this.getExtension(item);
+        var _item = this.getItem(items[i]);
 
-        if (item.show === false) {
+        _item = this.getExtension(_item);
+
+        if (_item.show === false) {
           continue;
         } //پارامتر های مشترک رو از آیتم بگیر
 
 
-        var _item = item,
-            showPivot = _item.showPivot,
-            _item$lineJoin = _item.lineJoin,
-            lineJoin = _item$lineJoin === void 0 ? 'miter' : _item$lineJoin,
-            _item$lineCap = _item.lineCap,
-            lineCap = _item$lineCap === void 0 ? 'butt' : _item$lineCap,
-            _item$rotate = _item.rotate,
-            rotate = _item$rotate === void 0 ? 0 : _item$rotate,
-            pivot = _item.pivot,
-            _item$angle = _item.angle,
-            angle = _item$angle === void 0 ? 0 : _item$angle,
-            _item$opacity = _item.opacity,
-            opacity = _item$opacity === void 0 ? 1 : _item$opacity,
-            _item$x2 = _item.x,
-            x = _item$x2 === void 0 ? 0 : _item$x2,
-            _item$y2 = _item.y,
-            y = _item$y2 === void 0 ? 0 : _item$y2,
-            fill = _item.fill,
-            stroke = _item.stroke,
-            dash = _item.dash,
-            _item$lineWidth = _item.lineWidth,
-            lineWidth = _item$lineWidth === void 0 ? 1 : _item$lineWidth;
+        var _item2 = _item,
+            showPivot = _item2.showPivot,
+            _item2$lineJoin = _item2.lineJoin,
+            lineJoin = _item2$lineJoin === void 0 ? 'miter' : _item2$lineJoin,
+            _item2$lineCap = _item2.lineCap,
+            lineCap = _item2$lineCap === void 0 ? 'butt' : _item2$lineCap,
+            _item2$rotate = _item2.rotate,
+            rotate = _item2$rotate === void 0 ? 0 : _item2$rotate,
+            pivot = _item2.pivot,
+            _item2$angle = _item2.angle,
+            angle = _item2$angle === void 0 ? 0 : _item2$angle,
+            _item2$opacity = _item2.opacity,
+            opacity = _item2$opacity === void 0 ? 1 : _item2$opacity,
+            _item2$x = _item2.x,
+            x = _item2$x === void 0 ? 0 : _item2$x,
+            _item2$y = _item2.y,
+            y = _item2$y === void 0 ? 0 : _item2$y,
+            fill = _item2.fill,
+            stroke = _item2.stroke,
+            dash = _item2.dash,
+            _item2$lineWidth = _item2.lineWidth,
+            lineWidth = _item2$lineWidth === void 0 ? 1 : _item2$lineWidth;
         x = getValueByRange(x, 0, this.width) + parentx;
         y = getValueByRange(y, 0, this.height) + parenty;
         rotate = getValueByRange(rotate, 0, 360) + parentrotate;
@@ -280,7 +390,7 @@ function (_Component) {
 
         if (!fill && !stroke) {
           stroke = '#000';
-          item.stroke = '#000';
+          _item.stroke = '#000';
         }
 
         ctx.save();
@@ -293,27 +403,27 @@ function (_Component) {
         ctx.globalAlpha = opacity;
         ctx.lineCap = lineCap;
         ctx.lineJoin = lineJoin;
-        this.shadow(item, ctx);
+        this.shadow(_item, ctx);
         dash && ctx.setLineDash(dash);
         ctx.lineWidth = lineWidth * zoom;
         ctx.strokeStyle = stroke === 'random' ? this.getRandomColor().color : this.getColor(stroke);
         ctx.fillStyle = fill === 'random' ? this.getRandomColor().color : this.getColor(fill);
 
-        if (item.items) {
-          this.draw(item.items, {
+        if (_item.items) {
+          this.draw(_item.items, {
             x: coords.x,
             y: coords.y,
             rotate: rotate,
             opacity: opacity
           });
-        } else if (item.width || item.height) {
-          var _item2 = item,
-              _item2$width = _item2.width,
-              width = _item2$width === void 0 ? 20 : _item2$width,
-              _item2$height = _item2.height,
-              height = _item2$height === void 0 ? 20 : _item2$height,
-              _item2$corner = _item2.corner,
-              corner = _item2$corner === void 0 ? [] : _item2$corner;
+        } else if (_item.width || _item.height) {
+          var _item3 = _item,
+              _item3$width = _item3.width,
+              width = _item3$width === void 0 ? 20 : _item3$width,
+              _item3$height = _item3.height,
+              height = _item3$height === void 0 ? 20 : _item3$height,
+              _item3$corner = _item3.corner,
+              corner = _item3$corner === void 0 ? [] : _item3$corner;
           width = getValueByRange(width, 0, this.width);
           height = getValueByRange(height, 0, this.height);
 
@@ -334,24 +444,24 @@ function (_Component) {
             x: 0,
             y: 0
           }, close, stroke, fill);
-        } else if (item.points) {
-          var _item3 = item,
-              _points = _item3.points,
-              _close = _item3.close;
+        } else if (_item.points) {
+          var _item4 = _item,
+              _points = _item4.points,
+              _close = _item4.close;
 
           if (_points.length < 1) {
             continue;
           }
 
-          this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill, item);
-        } else if (item.r) {
-          var _item4 = item,
-              r = _item4.r,
-              _item4$slice = _item4.slice,
-              slice = _item4$slice === void 0 ? [0, 360] : _item4$slice;
+          this.drawLine(parentx, parenty, _points, coords, _close, stroke, fill, _item);
+        } else if (_item.r) {
+          var _item5 = _item,
+              r = _item5.r,
+              _item5$slice = _item5.slice,
+              slice = _item5$slice === void 0 ? [0, 360] : _item5$slice;
           r = getValueByRange(r, this.width, this.height);
           r = r < 0 ? 0 : r;
-          item.r = r;
+          _item.r = r;
           var _rotateSetting$direct = rotateSetting.direction,
               direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct;
           var startAngle = getValueByRange(slice[0], 0, 360),
@@ -364,19 +474,19 @@ function (_Component) {
             endAngle = -a;
           }
 
-          item.startAngle = startAngle;
-          item.endAngle = endAngle;
+          _item.startAngle = startAngle;
+          _item.endAngle = endAngle;
           ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, startAngle * this.PI, endAngle * this.PI);
           stroke && ctx.stroke();
           fill && ctx.fill();
-        } else if (item.text || item.text === 0) {
-          var _item5 = item,
-              _item5$align = _item5.align,
-              align = _item5$align === void 0 ? [0, 0] : _item5$align,
-              _item5$fontSize = _item5.fontSize,
-              fontSize = _item5$fontSize === void 0 ? 12 : _item5$fontSize,
-              _item5$text = _item5.text,
-              text = _item5$text === void 0 ? 'Text' : _item5$text;
+        } else if (_item.text || _item.text === 0) {
+          var _item6 = _item,
+              _item6$align = _item6.align,
+              align = _item6$align === void 0 ? [0, 0] : _item6$align,
+              _item6$fontSize = _item6.fontSize,
+              fontSize = _item6$fontSize === void 0 ? 12 : _item6$fontSize,
+              _item6$text = _item6.text,
+              text = _item6$text === void 0 ? 'Text' : _item6$text;
 
           var _this$getTextAlign = this.getTextAlign(align),
               _this$getTextAlign2 = _slicedToArray(_this$getTextAlign, 2),
@@ -394,20 +504,19 @@ function (_Component) {
           this.showPivot(x, y);
         }
 
-        var X = this.mousePosition[0] + this.axisPosition[0];
-        var Y = this.mousePosition[1] + this.axisPosition[1];
-        item.inPath = false;
-        item.inStroke = false;
+        if (_item.event) {
+          var X = this.mousePosition[0] + this.axisPosition[0];
+          var Y = this.mousePosition[1] + this.axisPosition[1];
 
-        if (item.fill && ctx.isPointInPath(X, Y)) {
-          item.inPath = true;
-        } else if (item.stroke && ctx.isPointInStroke(X, Y)) {
-          item.inStroke = true;
+          if (_item.fill && ctx.isPointInPath(X, Y)) {
+            this.items.push(_item);
+          } else if (_item.stroke && ctx.isPointInStroke(X, Y)) {
+            this.items.push(_item);
+          }
         }
 
         ctx.closePath();
         ctx.restore();
-        this.items.push(item);
       }
     }
   }, {
@@ -477,9 +586,9 @@ function (_Component) {
     value: function rotate() {
       var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
       var center = arguments.length > 1 ? arguments[1] : undefined;
-      var _this$props2 = this.props,
-          zoom = _this$props2.zoom,
-          rotateSetting = _this$props2.rotateSetting;
+      var _this$props3 = this.props,
+          zoom = _this$props3.zoom,
+          rotateSetting = _this$props3.rotateSetting;
       var _rotateSetting$direct2 = rotateSetting.direction,
           direction = _rotateSetting$direct2 === void 0 ? 'clock' : _rotateSetting$direct2;
 
@@ -503,13 +612,15 @@ function (_Component) {
     key: "update",
     value: function update() {
       this.items = [];
-      var _this$props3 = this.props,
-          getSize = _this$props3.getSize,
-          grid = _this$props3.grid,
-          zoom = _this$props3.zoom;
-      var dom = this.dom.current;
-      this.width = (0, _jquery.default)(dom).width();
-      this.height = (0, _jquery.default)(dom).height();
+      var _this$props4 = this.props,
+          getSize = _this$props4.getSize,
+          grid = _this$props4.grid,
+          zoom = _this$props4.zoom;
+      var dom = (0, _jquery.default)(this.dom.current);
+      this.width = dom.width();
+      this.height = dom.height();
+      dom[0].width = this.width;
+      dom[0].height = this.height;
 
       var _this$props$axisPosit = _slicedToArray(this.props.axisPosition, 2),
           _this$props$axisPosit2 = _this$props$axisPosit[0],
@@ -523,11 +634,8 @@ function (_Component) {
         getSize(this.width, this.height);
       }
 
-      dom.width = this.width;
-      dom.height = this.height;
-
       if (grid) {
-        (0, _jquery.default)(dom).css(this.getBackground(grid, zoom, this.width, this.height));
+        dom.css(this.getBackground(grid, zoom, this.width, this.height));
       }
 
       this.clear();
@@ -674,9 +782,9 @@ function (_Component) {
   }, {
     key: "getBackground",
     value: function getBackground() {
-      var _this$props4 = this.props,
-          grid = _this$props4.grid,
-          zoom = _this$props4.zoom;
+      var _this$props5 = this.props,
+          grid = _this$props5.grid,
+          zoom = _this$props5.zoom;
 
       var _grid = _slicedToArray(grid, 3),
           x = _grid[0],
@@ -721,9 +829,9 @@ function (_Component) {
     key: "panmousemove",
     value: function panmousemove(e) {
       var so = this.startOffset,
-          _this$props5 = this.props,
-          zoom = _this$props5.zoom,
-          onpan = _this$props5.onpan,
+          _this$props6 = this.props,
+          zoom = _this$props6.zoom,
+          onpan = _this$props6.onpan,
           coords = getClient(e); //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
 
       this.panned = true;
@@ -734,9 +842,9 @@ function (_Component) {
   }, {
     key: "setScreen",
     value: function setScreen() {
-      var _this$props6 = this.props,
-          zoom = _this$props6.zoom,
-          screenPosition = _this$props6.screenPosition;
+      var _this$props7 = this.props,
+          zoom = _this$props7.zoom,
+          screenPosition = _this$props7.screenPosition;
       var canvas = this.dom.current;
       this.translate = {
         x: this.axisPosition[0] - screenPosition[0] * zoom,
@@ -752,16 +860,20 @@ function (_Component) {
     key: "mouseDown",
     value: function mouseDown(e) {
       this.mousePosition = this.getMousePosition(e);
+      this.update();
 
-      if (this.props.selectable) {
-        this.update();
-        this.searchItem();
+      if (this.items.length) {
+        var mousedown = this.items[this.items.length - 1].event.mousedown;
+
+        if (mousedown) {
+          mousedown();
+        }
       }
 
-      var _this$props7 = this.props,
-          mouseDown = _this$props7.mouseDown,
-          onpan = _this$props7.onpan,
-          getMousePosition = _this$props7.getMousePosition;
+      var _this$props8 = this.props,
+          mouseDown = _this$props8.mouseDown,
+          onpan = _this$props8.onpan,
+          getMousePosition = _this$props8.getMousePosition;
 
       if (getMousePosition) {
         getMousePosition(this.mousePosition);
@@ -773,6 +885,20 @@ function (_Component) {
 
       if (onpan) {
         this.panmousedown(e);
+      }
+    }
+  }, {
+    key: "mouseUp",
+    value: function mouseUp(e) {
+      this.mousePosition = this.getMousePosition(e);
+      this.update();
+
+      if (this.items.length) {
+        var mouseup = this.items[this.items.length - 1].event.mouseup;
+
+        if (mouseup) {
+          mouseup();
+        }
       }
     }
   }, {
@@ -820,10 +946,10 @@ function (_Component) {
   }, {
     key: "getMousePosition",
     value: function getMousePosition(e) {
-      var _this$props8 = this.props,
-          unit = _this$props8.unit,
-          sp = _this$props8.screenPosition,
-          zoom = _this$props8.zoom;
+      var _this$props9 = this.props,
+          unit = _this$props9.unit,
+          sp = _this$props9.screenPosition,
+          zoom = _this$props9.zoom;
       var client = getClient(e);
       var offset = (0, _jquery.default)(this.dom.current).offset();
       client = {
@@ -837,17 +963,18 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props9 = this.props,
-          id = _this$props9.id,
-          style = _this$props9.style,
-          className = _this$props9.className;
+      var _this$props10 = this.props,
+          id = _this$props10.id,
+          style = _this$props10.style,
+          className = _this$props10.className;
       return _react.default.createElement("canvas", {
         ref: this.dom,
         className: className,
         id: id,
         style: this.getStyle(style),
         onMouseDown: this.mouseDown.bind(this),
-        onMouseMove: this.mouseMove.bind(this)
+        onMouseMove: this.mouseMove.bind(this),
+        onMouseUp: this.mouseUp.bind(this)
       });
     }
   }]);
@@ -858,7 +985,6 @@ function (_Component) {
 exports.default = Canvas;
 Canvas.defaultProps = {
   zoom: 1,
-  unit: 'px',
   axisPosition: ['50%', '50%'],
   selectable: false,
   screenPosition: [0, 0],

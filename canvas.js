@@ -1,17 +1,69 @@
 import React, { Component,createRef } from 'react';
 import $ from 'jquery';
 import RActions from 'r-actions';
-import {getAngle,getLength,getLineBySLA,getArcBy3Points,getPrependicularPointFromLine,getPrependicularPointToLine} from 'r-geometric';
+import {getLength,getLineBySLA,getArcBy3Points,getPrependicularPointFromLine} from 'r-geometric';
 var {eventHandler,getClient,getValueByRange} = new RActions();
 export default class Canvas extends Component {
   constructor(props) {
     super(props);
     this.PI = Math.PI / 180;
     this.dom = createRef(); this.width = 0; this.height = 0;
-    this.isMobile = 'ontouchstart' in document.documentElement?true:false;
+    this.isMobile = 'ontouchstart' in document.documentElement?true:false; 
     $(window).on('resize',this.resize.bind(this));
     this.oc = 5;
-    this.mousePosition = [null,null]
+    this.mousePosition = [Infinity,Infinity];
+    if(this.props.debugMode){this.debug();}
+  }
+  debug(){
+    const {axisPosition,screenPosition,grid,items} = this.props;
+    //check axisPosition
+    let type,x,y;
+    if(!Array.isArray(axisPosition)){console.error('axisPosition must be an array')}
+    x = axisPosition[0];
+    y = axisPosition[1];
+    if(typeof x !== 'string' && typeof x !== 'number'){console.error('axisPosition[0] must be number or string')}
+    if(typeof y !== 'string' && typeof y !== 'number'){console.error('axisPosition[1] must be number or string')}
+    if(!Array.isArray(screenPosition)){console.error('screenPosition must be an array')}
+    x = screenPosition[0];
+    y = screenPosition[1];
+    if(typeof x !== 'string' && typeof x !== 'number'){console.error('screenPosition[0] must be number or string')}
+    if(typeof y !== 'string' && typeof y !== 'number'){console.error('screenPosition[1] must be number or string')}
+    if(!Array.isArray(grid)){console.error('grid must be an array')}
+    x = grid[0];
+    y = grid[1];
+    if(typeof x !== 'string' && typeof x !== 'number'){console.error('grid[0] must be number or string')}
+    if(typeof y !== 'string' && typeof y !== 'number'){console.error('grid[1] must be number or string')}
+    if(!Array.isArray(items)){console.error('items must be an array')}
+    this.analizItems(items)
+
+  }
+  analizItems(items,index = ''){
+    for(var i = 0; i < items.length; i++){
+      var {points,pivot} = items[i];
+      var addr = index + '.items['+i+']';
+      if(pivot && !Array.isArray(pivot)){console.error(`${addr}:pivot must be an array`)}
+      if(points){
+        if(!Array.isArray(points)){console.error(`${addr}:points must be an array`)}
+        for(var j = 0; j < points.length; j++){
+          var point = points[j];
+          if(typeof point !== 'object'){
+            console.error(`${addr}:points[${j}] must be object or array`)
+          }
+          if(!Array.isArray(point)){
+            if(point.length === undefined){
+              console.error(`${addr}:points[${j}].length is not defined`)
+            }
+            if(point.angle === undefined){
+              console.error(`${addr}:points[${j}].angle is not defined`)
+            }
+          }
+        }
+      }
+      else if(item.items){
+        this.analizItems(item.items,addr)
+      }
+      
+    }
   }
   resize(){
     this.timer = 0;
@@ -143,18 +195,16 @@ export default class Canvas extends Component {
         ctx.textBaseline = textBaseline;
         ctx.font = (fontSize * zoom) + "px arial";
         stroke && ctx.strokeText(text, coords.x * zoom, coords.y * zoom);
-        fill && ctx.fillText(text,coords.x * zoom,coords.y * zoom);
+        fill && ctx.fillText(text,coords.x * zoom,coords.y * zoom);   
       }
       if(showPivot){this.showPivot(x,y)}
-      var X = this.mousePosition[0] + this.axisPosition[0];
-      var Y = this.mousePosition[1] + this.axisPosition[1];
-      item.inPath = false;
-      item.inStroke = false;
-      if(item.fill && ctx.isPointInPath(X,Y)){item.inPath = true;}
-      else if(item.stroke && ctx.isPointInStroke(X,Y)){item.inStroke = true;}
+      if(item.event){ 
+        let X = this.mousePosition[0] + this.axisPosition[0];
+        let Y = this.mousePosition[1] + this.axisPosition[1];
+        if(item.fill && ctx.isPointInPath(X,Y)){this.items.push(item);}
+        else if(item.stroke && ctx.isPointInStroke(X,Y)){this.items.push(item);} 
+      }
       ctx.closePath(); ctx.restore();
-      this.items.push(item);
-      
     }
   }
   drawLine(parentx,parenty,points,coords,close,stroke,fill,item){
@@ -202,18 +252,18 @@ export default class Canvas extends Component {
   update(){
     this.items = [];
     var {getSize,grid,zoom} = this.props;
-    var dom = this.dom.current;
-    this.width = $(dom).width();
-    this.height = $(dom).height();
+    var dom = $(this.dom.current);
+    this.width = dom.width();
+    this.height = dom.height();
+    dom[0].width = this.width;
+    dom[0].height = this.height; 
     var [x = '50%',y = '50%'] = this.props.axisPosition;
     this.axisPosition = [
       getValueByRange(x,0,this.width),
       getValueByRange(y,0,this.height)
     ]
     if(getSize){getSize(this.width,this.height);}
-    dom.width = this.width;
-    dom.height = this.height;
-    if(grid){$(dom).css(this.getBackground(grid,zoom,this.width,this.height));}
+    if(grid){dom.css(this.getBackground(grid,zoom,this.width,this.height));}
     this.clear();
     this.setScreen();
     if(grid){this.drawAxes();}
@@ -291,7 +341,6 @@ export default class Canvas extends Component {
       backgroundSize : `${a}px ${a}px,${a}px ${a}px,${b} ${c},${b} ${c}`,
     }
   }
-  
   panmousedown(e){
     eventHandler("window", "mousemove", $.proxy(this.panmousemove,this));
     eventHandler("window", "mouseup", $.proxy(this.panmouseup,this));
@@ -329,15 +378,24 @@ export default class Canvas extends Component {
   }
   mouseDown(e){
     this.mousePosition = this.getMousePosition(e);
-    if(this.props.selectable){
-      this.update();
-      this.searchItem(); 
-    }
+    this.update();
+    if(this.items.length){
+      let mousedown = this.items[this.items.length - 1].event.mousedown;
+      if(mousedown){mousedown();}
+    } 
     var {mouseDown,onpan,getMousePosition} = this.props;
     if(getMousePosition){getMousePosition(this.mousePosition);}
     if(mouseDown){mouseDown(e);} 
     if(onpan){this.panmousedown(e);} 
   } 
+  mouseUp(e){
+    this.mousePosition = this.getMousePosition(e);
+    this.update();
+    if(this.items.length){
+      let mouseup = this.items[this.items.length - 1].event.mouseup;
+      if(mouseup){mouseup();}
+    }
+  }
   arcTest([x,y]){
     this.ctx.beginPath();
     this.ctx.arc(x,y,3,0,360*Math.PI / 180);
@@ -381,11 +439,13 @@ export default class Canvas extends Component {
         style={this.getStyle(style)} 
         onMouseDown={this.mouseDown.bind(this)}
         onMouseMove={this.mouseMove.bind(this)}
+        onMouseUp={this.mouseUp.bind(this)}
+        
       ></canvas>
     );
   }
 }
 Canvas.defaultProps = {
-  zoom:1,unit:'px',axisPosition:['50%','50%'],selectable:false,
+  zoom:1,axisPosition:['50%','50%'],selectable:false,
   screenPosition:[0,0],items:[],rotateSetting:{direction:'clock'}
 }
