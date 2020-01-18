@@ -134,14 +134,15 @@ export default class Canvas extends Component {
     var {x:parentx = 0,y:parenty = 0,rotate:parentrotate = 0,opacity:parentOpacity = 1} = parent;
     var {rotateSetting,zoom,extensions} = this.props,ctx = this.ctx;
     for(var i = 0; i < items.length; i++){
-      let item = this.getItem(items[i]);
+      let item = this.getItem(items[i]); 
       item = this.getExtension(item);
       if(item.show === false){continue;}  
+
       //پارامتر های مشترک رو از آیتم بگیر
       let {showPivot,lineJoin = 'miter',lineCap = 'butt',rotate = 0,pivot,angle = 0,opacity = 1,x = 0,y = 0,fill,stroke,dash,lineWidth = 1} = item;  
       x = getValueByRange(x,0,this.width) + parentx;
       y = getValueByRange(y,0,this.height) + parenty;   
-      rotate = getValueByRange(rotate,0,360) + parentrotate;
+      rotate = getValueByRange(rotate,0,360);
       opacity *= parentOpacity;
       let coords = this.getCoordsByPivot({x,y,pivot});
       if(!fill && !stroke){stroke = '#000'; item.stroke = '#000';}
@@ -198,7 +199,7 @@ export default class Canvas extends Component {
         fill && ctx.fillText(text,coords.x * zoom,coords.y * zoom);   
       }
       if(showPivot){this.showPivot(x,y)}
-      if(item.event){ 
+      if(this.eventMode && item.event && item.event[this.eventMode]){ 
         let X = this.mousePosition[0] + this.axisPosition[0];
         let Y = this.mousePosition[1] + this.axisPosition[1];
         if(item.fill && ctx.isPointInPath(X,Y)){this.items.push(item);}
@@ -266,7 +267,7 @@ export default class Canvas extends Component {
     if(grid){dom.css(this.getBackground(grid,zoom,this.width,this.height));}
     this.clear();
     this.setScreen();
-    if(grid){this.drawAxes();}
+    //if(grid){this.drawAxes();}
     this.draw();
   }
   clear() {
@@ -377,23 +378,24 @@ export default class Canvas extends Component {
     });
   }
   mouseDown(e){
-    this.mousePosition = this.getMousePosition(e);
-    this.update();
-    if(this.items.length){
-      let mousedown = this.items[this.items.length - 1].event.mousedown;
-      if(mousedown){mousedown();}
+    var {mouseDown,onpan} = this.props;
+    if(mouseDown){
+      this.mousePosition = this.getMousePosition(e);
+      this.eventMode = 'mousedown';
+      this.update();
+      this.eventMode = false; 
+      mouseDown({e,mousePosition:this.mousePosition,items:this.items});
     } 
-    var {mouseDown,onpan,getMousePosition} = this.props;
-    if(getMousePosition){getMousePosition(this.mousePosition);}
-    if(mouseDown){mouseDown(e);} 
-    if(onpan){this.panmousedown(e);} 
+    if(onpan && this.items.length === 0){this.panmousedown(e);} 
   } 
   mouseUp(e){
-    this.mousePosition = this.getMousePosition(e);
-    this.update();
-    if(this.items.length){
-      let mouseup = this.items[this.items.length - 1].event.mouseup;
-      if(mouseup){mouseup();}
+    const {mouseUp} = this.props;
+    if(mouseUp){
+      this.mousePosition = this.getMousePosition(e);
+      this.eventMode = 'mouseup';
+      this.update();
+      this.eventMode = false;
+      mouseUp({e,mousePosition:this.mousePosition,items:this.items})
     }
   }
   arcTest([x,y]){
@@ -418,7 +420,7 @@ export default class Canvas extends Component {
   }
   mouseMove(e){
     this.mousePosition = this.getMousePosition(e);
-    if(this.props.getMousePosition){this.props.getMousePosition(this.mousePosition);}
+    if(this.props.mouseMove){this.props.mouseMove({e,mousePosition:this.mousePosition});}
   }
   getMousePosition(e) { 
     var {unit,screenPosition:sp,zoom} = this.props;

@@ -380,7 +380,7 @@ function (_Component) {
             lineWidth = _item2$lineWidth === void 0 ? 1 : _item2$lineWidth;
         x = getValueByRange(x, 0, this.width) + parentx;
         y = getValueByRange(y, 0, this.height) + parenty;
-        rotate = getValueByRange(rotate, 0, 360) + parentrotate;
+        rotate = getValueByRange(rotate, 0, 360);
         opacity *= parentOpacity;
         var coords = this.getCoordsByPivot({
           x: x,
@@ -504,7 +504,7 @@ function (_Component) {
           this.showPivot(x, y);
         }
 
-        if (_item.event) {
+        if (this.eventMode && _item.event && _item.event[this.eventMode]) {
           var X = this.mousePosition[0] + this.axisPosition[0];
           var Y = this.mousePosition[1] + this.axisPosition[1];
 
@@ -639,11 +639,7 @@ function (_Component) {
       }
 
       this.clear();
-      this.setScreen();
-
-      if (grid) {
-        this.drawAxes();
-      }
+      this.setScreen(); //if(grid){this.drawAxes();}
 
       this.draw();
     }
@@ -859,46 +855,41 @@ function (_Component) {
   }, {
     key: "mouseDown",
     value: function mouseDown(e) {
-      this.mousePosition = this.getMousePosition(e);
-      this.update();
-
-      if (this.items.length) {
-        var mousedown = this.items[this.items.length - 1].event.mousedown;
-
-        if (mousedown) {
-          mousedown();
-        }
-      }
-
       var _this$props8 = this.props,
           mouseDown = _this$props8.mouseDown,
-          onpan = _this$props8.onpan,
-          getMousePosition = _this$props8.getMousePosition;
-
-      if (getMousePosition) {
-        getMousePosition(this.mousePosition);
-      }
+          onpan = _this$props8.onpan;
 
       if (mouseDown) {
-        mouseDown(e);
+        this.mousePosition = this.getMousePosition(e);
+        this.eventMode = 'mousedown';
+        this.update();
+        this.eventMode = false;
+        mouseDown({
+          e: e,
+          mousePosition: this.mousePosition,
+          items: this.items
+        });
       }
 
-      if (onpan) {
+      if (onpan && this.items.length === 0) {
         this.panmousedown(e);
       }
     }
   }, {
     key: "mouseUp",
     value: function mouseUp(e) {
-      this.mousePosition = this.getMousePosition(e);
-      this.update();
+      var mouseUp = this.props.mouseUp;
 
-      if (this.items.length) {
-        var mouseup = this.items[this.items.length - 1].event.mouseup;
-
-        if (mouseup) {
-          mouseup();
-        }
+      if (mouseUp) {
+        this.mousePosition = this.getMousePosition(e);
+        this.eventMode = 'mouseup';
+        this.update();
+        this.eventMode = false;
+        mouseUp({
+          e: e,
+          mousePosition: this.mousePosition,
+          items: this.items
+        });
       }
     }
   }, {
@@ -939,8 +930,11 @@ function (_Component) {
     value: function mouseMove(e) {
       this.mousePosition = this.getMousePosition(e);
 
-      if (this.props.getMousePosition) {
-        this.props.getMousePosition(this.mousePosition);
+      if (this.props.mouseMove) {
+        this.props.mouseMove({
+          e: e,
+          mousePosition: this.mousePosition
+        });
       }
     }
   }, {
