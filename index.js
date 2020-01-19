@@ -509,9 +509,9 @@ function (_Component) {
           var Y = this.mousePosition[1] + this.axisPosition[1];
 
           if (_item.fill && ctx.isPointInPath(X, Y)) {
-            this.items.push(_item);
+            this.item = _item;
           } else if (_item.stroke && ctx.isPointInStroke(X, Y)) {
-            this.items.push(_item);
+            this.item = _item;
           }
         }
 
@@ -858,17 +858,19 @@ function (_Component) {
       var _this$props8 = this.props,
           mouseDown = _this$props8.mouseDown,
           onpan = _this$props8.onpan;
+      this.mousePosition = this.getMousePosition(e);
+      this.eventMode = 'mousedown';
+      this.update();
+
+      if (this.item) {
+        this.item.event.mousedown();
+      }
+
+      this.item = false;
+      this.eventMode = false;
 
       if (mouseDown) {
-        this.mousePosition = this.getMousePosition(e);
-        this.eventMode = 'mousedown';
-        this.update();
-        this.eventMode = false;
-        mouseDown({
-          e: e,
-          mousePosition: this.mousePosition,
-          items: this.items
-        });
+        mouseDown(e, this.mousePosition);
       }
 
       if (onpan && this.items.length === 0) {
@@ -879,17 +881,19 @@ function (_Component) {
     key: "mouseUp",
     value: function mouseUp(e) {
       var mouseUp = this.props.mouseUp;
+      this.mousePosition = this.getMousePosition(e);
+      this.eventMode = 'mouseup';
+      this.update();
+
+      if (this.item) {
+        this.item.event.mouseup();
+      }
+
+      this.item = false;
+      this.eventMode = false;
 
       if (mouseUp) {
-        this.mousePosition = this.getMousePosition(e);
-        this.eventMode = 'mouseup';
-        this.update();
-        this.eventMode = false;
-        mouseUp({
-          e: e,
-          mousePosition: this.mousePosition,
-          items: this.items
-        });
+        mouseUp(e, this.mousePosition);
       }
     }
   }, {
@@ -931,10 +935,7 @@ function (_Component) {
       this.mousePosition = this.getMousePosition(e);
 
       if (this.props.mouseMove) {
-        this.props.mouseMove({
-          e: e,
-          mousePosition: this.mousePosition
-        });
+        this.props.mouseMove(e, this.mousePosition);
       }
     }
   }, {

@@ -189,11 +189,11 @@ export default class Canvas extends Component {
         fill && ctx.fill(); 
       }
       
-      else if(item.text || item.text === 0){
+      else if(item.text || item.text === 0){ 
         var {align=[0,0],fontSize=12,text = 'Text'} = item;
         var [textAlign,textBaseline] = this.getTextAlign(align);
         ctx.textAlign = textAlign;
-        ctx.textBaseline = textBaseline;
+        ctx.textBaseline = textBaseline; 
         ctx.font = (fontSize * zoom) + "px arial";
         stroke && ctx.strokeText(text, coords.x * zoom, coords.y * zoom);
         fill && ctx.fillText(text,coords.x * zoom,coords.y * zoom);   
@@ -202,8 +202,8 @@ export default class Canvas extends Component {
       if(this.eventMode && item.event && item.event[this.eventMode]){ 
         let X = this.mousePosition[0] + this.axisPosition[0];
         let Y = this.mousePosition[1] + this.axisPosition[1];
-        if(item.fill && ctx.isPointInPath(X,Y)){this.items.push(item);}
-        else if(item.stroke && ctx.isPointInStroke(X,Y)){this.items.push(item);} 
+        if(item.fill && ctx.isPointInPath(X,Y)){this.item = item;}
+        else if(item.stroke && ctx.isPointInStroke(X,Y)){this.item = item;} 
       }
       ctx.closePath(); ctx.restore();
     }
@@ -378,25 +378,25 @@ export default class Canvas extends Component {
     });
   }
   mouseDown(e){
-    var {mouseDown,onpan} = this.props;
-    if(mouseDown){
-      this.mousePosition = this.getMousePosition(e);
-      this.eventMode = 'mousedown';
-      this.update();
-      this.eventMode = false; 
-      mouseDown({e,mousePosition:this.mousePosition,items:this.items});
-    } 
+    const {mouseDown,onpan} = this.props;
+    this.mousePosition = this.getMousePosition(e); 
+    this.eventMode = 'mousedown';
+    this.update();
+    if(this.item){this.item.event.mousedown()} 
+    this.item = false;
+    this.eventMode = false;
+    if(mouseDown){mouseDown(e,this.mousePosition);} 
     if(onpan && this.items.length === 0){this.panmousedown(e);} 
   } 
   mouseUp(e){
     const {mouseUp} = this.props;
-    if(mouseUp){
-      this.mousePosition = this.getMousePosition(e);
-      this.eventMode = 'mouseup';
-      this.update();
-      this.eventMode = false;
-      mouseUp({e,mousePosition:this.mousePosition,items:this.items})
-    }
+    this.mousePosition = this.getMousePosition(e);
+    this.eventMode = 'mouseup';
+    this.update();
+    if(this.item){this.item.event.mouseup();}
+    this.item = false;
+    this.eventMode = false;  
+    if(mouseUp){mouseUp(e,this.mousePosition)}
   }
   arcTest([x,y]){
     this.ctx.beginPath();
@@ -420,7 +420,7 @@ export default class Canvas extends Component {
   }
   mouseMove(e){
     this.mousePosition = this.getMousePosition(e);
-    if(this.props.mouseMove){this.props.mouseMove({e,mousePosition:this.mousePosition});}
+    if(this.props.mouseMove){this.props.mouseMove(e,this.mousePosition);}
   }
   getMousePosition(e) { 
     var {unit,screenPosition:sp,zoom} = this.props;
