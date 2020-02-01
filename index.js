@@ -37,7 +37,7 @@ function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) ||
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!_instanceof(instance, Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -79,77 +79,10 @@ function (_Component) {
     (0, _jquery.default)(window).on('resize', _this.resize.bind(_assertThisInitialized(_this)));
     _this.oc = 5;
     _this.mousePosition = [Infinity, Infinity];
-
-    if (_this.props.debugMode) {
-      _this.debug();
-    }
-
     return _this;
   }
 
   _createClass(Canvas, [{
-    key: "debug",
-    value: function debug() {
-      var _this$props = this.props,
-          axisPosition = _this$props.axisPosition,
-          screenPosition = _this$props.screenPosition,
-          grid = _this$props.grid,
-          items = _this$props.items; //check axisPosition
-
-      var type, x, y;
-
-      if (!Array.isArray(axisPosition)) {
-        console.error('axisPosition must be an array');
-      }
-
-      x = axisPosition[0];
-      y = axisPosition[1];
-
-      if (typeof x !== 'string' && typeof x !== 'number') {
-        console.error('axisPosition[0] must be number or string');
-      }
-
-      if (typeof y !== 'string' && typeof y !== 'number') {
-        console.error('axisPosition[1] must be number or string');
-      }
-
-      if (!Array.isArray(screenPosition)) {
-        console.error('screenPosition must be an array');
-      }
-
-      x = screenPosition[0];
-      y = screenPosition[1];
-
-      if (typeof x !== 'string' && typeof x !== 'number') {
-        console.error('screenPosition[0] must be number or string');
-      }
-
-      if (typeof y !== 'string' && typeof y !== 'number') {
-        console.error('screenPosition[1] must be number or string');
-      }
-
-      if (!Array.isArray(grid)) {
-        console.error('grid must be an array');
-      }
-
-      x = grid[0];
-      y = grid[1];
-
-      if (typeof x !== 'string' && typeof x !== 'number') {
-        console.error('grid[0] must be number or string');
-      }
-
-      if (typeof y !== 'string' && typeof y !== 'number') {
-        console.error('grid[1] must be number or string');
-      }
-
-      if (!Array.isArray(items)) {
-        console.error('items must be an array');
-      }
-
-      this.analizItems(items);
-    }
-  }, {
     key: "analizItems",
     value: function analizItems(items) {
       var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
@@ -340,10 +273,10 @@ function (_Component) {
           parentrotate = _parent$rotate === void 0 ? 0 : _parent$rotate,
           _parent$opacity = parent.opacity,
           parentOpacity = _parent$opacity === void 0 ? 1 : _parent$opacity;
-      var _this$props2 = this.props,
-          rotateSetting = _this$props2.rotateSetting,
-          zoom = _this$props2.zoom,
-          extensions = _this$props2.extensions,
+      var _this$props = this.props,
+          rotateSetting = _this$props.rotateSetting,
+          zoom = _this$props.zoom,
+          extensions = _this$props.extensions,
           ctx = this.ctx;
 
       for (var i = 0; i < items.length; i++) {
@@ -406,8 +339,8 @@ function (_Component) {
         this.shadow(_item, ctx);
         dash && ctx.setLineDash(dash);
         ctx.lineWidth = lineWidth * zoom;
-        ctx.strokeStyle = stroke === 'random' ? this.getRandomColor().color : this.getColor(stroke);
-        ctx.fillStyle = fill === 'random' ? this.getRandomColor().color : this.getColor(fill);
+        ctx.strokeStyle = stroke === 'random' ? this.getRandomColor().color : this.getColor(stroke, coords);
+        ctx.fillStyle = fill === 'random' ? this.getRandomColor().color : this.getColor(fill, coords);
 
         if (_item.items) {
           this.draw(_item.items, {
@@ -586,9 +519,9 @@ function (_Component) {
     value: function rotate() {
       var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
       var center = arguments.length > 1 ? arguments[1] : undefined;
-      var _this$props3 = this.props,
-          zoom = _this$props3.zoom,
-          rotateSetting = _this$props3.rotateSetting;
+      var _this$props2 = this.props,
+          zoom = _this$props2.zoom,
+          rotateSetting = _this$props2.rotateSetting;
       var _rotateSetting$direct2 = rotateSetting.direction,
           direction = _rotateSetting$direct2 === void 0 ? 'clock' : _rotateSetting$direct2;
 
@@ -612,10 +545,10 @@ function (_Component) {
     key: "update",
     value: function update() {
       this.items = [];
-      var _this$props4 = this.props,
-          getSize = _this$props4.getSize,
-          grid = _this$props4.grid,
-          zoom = _this$props4.zoom;
+      var _this$props3 = this.props,
+          getSize = _this$props3.getSize,
+          grid = _this$props3.grid,
+          zoom = _this$props3.zoom;
       var dom = (0, _jquery.default)(this.dom.current);
       this.width = dom.width();
       this.height = dom.height();
@@ -639,7 +572,11 @@ function (_Component) {
       }
 
       this.clear();
-      this.setScreen(); //if(grid){this.drawAxes();}
+      this.setScreen();
+
+      if (grid) {
+        this.drawAxes();
+      }
 
       this.draw();
     }
@@ -659,13 +596,11 @@ function (_Component) {
       this.draw([{
         points: [[0, -4002], [0, 4000]],
         stroke: stroke,
-        dash: dash,
-        AxIs: true
+        dash: dash
       }, {
         points: [[-4002, 0], [4000, 0]],
         stroke: stroke,
-        dash: dash,
-        AxIs: true
+        dash: dash
       }]);
     }
   }, {
@@ -681,7 +616,12 @@ function (_Component) {
     }
   }, {
     key: "getColor",
-    value: function getColor(color) {
+    value: function getColor(color, _ref5) {
+      var _ref5$x = _ref5.x,
+          x = _ref5$x === void 0 ? 0 : _ref5$x,
+          _ref5$y = _ref5.y,
+          y = _ref5$y === void 0 ? 0 : _ref5$y;
+
       if (!color) {
         return;
       }
@@ -693,13 +633,9 @@ function (_Component) {
       var length = color.length;
 
       if (length === 5) {
-        var _this$ctx;
-
-        var g = (_this$ctx = this.ctx).createLinearGradient.apply(_this$ctx, _toConsumableArray(color));
+        var g = this.ctx.createLinearGradient(color[0] + x, color[1] + y, color[2] + x, color[3] + y);
       } else if (length === 7) {
-        var _this$ctx2;
-
-        var g = (_this$ctx2 = this.ctx).createRadialGradient.apply(_this$ctx2, _toConsumableArray(color));
+        var g = this.ctx.createRadialGradient(color[0] + x, color[1] + y, color[2], color[3] + x, color[4] + y, color[5]);
       }
 
       var stops = color[color.length - 1];
@@ -713,8 +649,8 @@ function (_Component) {
     }
   }, {
     key: "shadow",
-    value: function shadow(_ref5) {
-      var _shadow = _ref5.shadow;
+    value: function shadow(_ref6) {
+      var _shadow = _ref6.shadow;
 
       if (!_shadow) {
         return;
@@ -766,21 +702,21 @@ function (_Component) {
     }
   }, {
     key: "getTextAlign",
-    value: function getTextAlign(_ref6) {
-      var _ref7 = _slicedToArray(_ref6, 2),
-          _ref7$ = _ref7[0],
-          x = _ref7$ === void 0 ? 0 : _ref7$,
-          _ref7$2 = _ref7[1],
-          y = _ref7$2 === void 0 ? 0 : _ref7$2;
+    value: function getTextAlign(_ref7) {
+      var _ref8 = _slicedToArray(_ref7, 2),
+          _ref8$ = _ref8[0],
+          x = _ref8$ === void 0 ? 0 : _ref8$,
+          _ref8$2 = _ref8[1],
+          y = _ref8$2 === void 0 ? 0 : _ref8$2;
 
       return [['right', 'center', 'left'][x + 1], ['top', 'middle', 'bottom'][y + 1]];
     }
   }, {
     key: "getBackground",
     value: function getBackground() {
-      var _this$props5 = this.props,
-          grid = _this$props5.grid,
-          zoom = _this$props5.zoom;
+      var _this$props4 = this.props,
+          grid = _this$props4.grid,
+          zoom = _this$props4.zoom;
 
       var _grid = _slicedToArray(grid, 3),
           x = _grid[0],
@@ -825,9 +761,9 @@ function (_Component) {
     key: "panmousemove",
     value: function panmousemove(e) {
       var so = this.startOffset,
-          _this$props6 = this.props,
-          zoom = _this$props6.zoom,
-          onpan = _this$props6.onpan,
+          _this$props5 = this.props,
+          zoom = _this$props5.zoom,
+          onpan = _this$props5.onpan,
           coords = getClient(e); //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
 
       this.panned = true;
@@ -838,9 +774,9 @@ function (_Component) {
   }, {
     key: "setScreen",
     value: function setScreen() {
-      var _this$props7 = this.props,
-          zoom = _this$props7.zoom,
-          screenPosition = _this$props7.screenPosition;
+      var _this$props6 = this.props,
+          zoom = _this$props6.zoom,
+          screenPosition = _this$props6.screenPosition;
       var canvas = this.dom.current;
       this.translate = {
         x: this.axisPosition[0] - screenPosition[0] * zoom,
@@ -855,9 +791,9 @@ function (_Component) {
   }, {
     key: "mouseDown",
     value: function mouseDown(e) {
-      var _this$props8 = this.props,
-          mouseDown = _this$props8.mouseDown,
-          onpan = _this$props8.onpan;
+      var _this$props7 = this.props,
+          mouseDown = _this$props7.mouseDown,
+          onpan = _this$props7.onpan;
       this.mousePosition = this.getMousePosition(e);
       this.eventMode = 'mousedown';
       this.update();
@@ -898,10 +834,10 @@ function (_Component) {
     }
   }, {
     key: "arcTest",
-    value: function arcTest(_ref8) {
-      var _ref9 = _slicedToArray(_ref8, 2),
-          x = _ref9[0],
-          y = _ref9[1];
+    value: function arcTest(_ref9) {
+      var _ref10 = _slicedToArray(_ref9, 2),
+          x = _ref10[0],
+          y = _ref10[1];
 
       this.ctx.beginPath();
       this.ctx.arc(x, y, 3, 0, 360 * Math.PI / 180);
@@ -941,10 +877,10 @@ function (_Component) {
   }, {
     key: "getMousePosition",
     value: function getMousePosition(e) {
-      var _this$props9 = this.props,
-          unit = _this$props9.unit,
-          sp = _this$props9.screenPosition,
-          zoom = _this$props9.zoom;
+      var _this$props8 = this.props,
+          unit = _this$props8.unit,
+          sp = _this$props8.screenPosition,
+          zoom = _this$props8.zoom;
       var client = getClient(e);
       var offset = (0, _jquery.default)(this.dom.current).offset();
       client = {
@@ -958,10 +894,10 @@ function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props10 = this.props,
-          id = _this$props10.id,
-          style = _this$props10.style,
-          className = _this$props10.className;
+      var _this$props9 = this.props,
+          id = _this$props9.id,
+          style = _this$props9.style,
+          className = _this$props9.className;
       return _react.default.createElement("canvas", {
         ref: this.dom,
         className: className,

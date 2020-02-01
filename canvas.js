@@ -12,31 +12,9 @@ export default class Canvas extends Component {
     $(window).on('resize',this.resize.bind(this));
     this.oc = 5;
     this.mousePosition = [Infinity,Infinity];
-    if(this.props.debugMode){this.debug();}
+    
   }
-  debug(){
-    const {axisPosition,screenPosition,grid,items} = this.props;
-    //check axisPosition
-    let type,x,y;
-    if(!Array.isArray(axisPosition)){console.error('axisPosition must be an array')}
-    x = axisPosition[0];
-    y = axisPosition[1];
-    if(typeof x !== 'string' && typeof x !== 'number'){console.error('axisPosition[0] must be number or string')}
-    if(typeof y !== 'string' && typeof y !== 'number'){console.error('axisPosition[1] must be number or string')}
-    if(!Array.isArray(screenPosition)){console.error('screenPosition must be an array')}
-    x = screenPosition[0];
-    y = screenPosition[1];
-    if(typeof x !== 'string' && typeof x !== 'number'){console.error('screenPosition[0] must be number or string')}
-    if(typeof y !== 'string' && typeof y !== 'number'){console.error('screenPosition[1] must be number or string')}
-    if(!Array.isArray(grid)){console.error('grid must be an array')}
-    x = grid[0];
-    y = grid[1];
-    if(typeof x !== 'string' && typeof x !== 'number'){console.error('grid[0] must be number or string')}
-    if(typeof y !== 'string' && typeof y !== 'number'){console.error('grid[1] must be number or string')}
-    if(!Array.isArray(items)){console.error('items must be an array')}
-    this.analizItems(items)
-
-  }
+  
   analizItems(items,index = ''){
     for(var i = 0; i < items.length; i++){
       var {points,pivot} = items[i];
@@ -155,8 +133,8 @@ export default class Canvas extends Component {
       this.shadow(item,ctx);
       dash && ctx.setLineDash(dash);
       ctx.lineWidth = lineWidth * zoom;
-      ctx.strokeStyle = stroke === 'random'?this.getRandomColor().color:this.getColor(stroke);
-      ctx.fillStyle = fill === 'random'?this.getRandomColor().color:this.getColor(fill);
+      ctx.strokeStyle = stroke === 'random'?this.getRandomColor().color:this.getColor(stroke,coords);
+      ctx.fillStyle = fill === 'random'?this.getRandomColor().color:this.getColor(fill,coords);
     
       if(item.items){this.draw(item.items,{x:coords.x,y:coords.y,rotate,opacity});}
       else if(item.width || item.height){
@@ -267,7 +245,7 @@ export default class Canvas extends Component {
     if(grid){dom.css(this.getBackground(grid,zoom,this.width,this.height));}
     this.clear();
     this.setScreen();
-    //if(grid){this.drawAxes();}
+    if(grid){this.drawAxes();}
     this.draw();
   }
   clear() {
@@ -279,8 +257,8 @@ export default class Canvas extends Component {
   drawAxes(){
     var dash = [3,3],stroke = '#000';
     this.draw([
-      {points:[[0,-4002],[0,4000]],stroke,dash,AxIs:true},
-      {points:[[-4002,0],[4000,0]],stroke,dash,AxIs:true}
+      {points:[[0,-4002],[0,4000]],stroke,dash},
+      {points:[[-4002,0],[4000,0]],stroke,dash}
     ]);
   }
   componentDidMount(){
@@ -290,15 +268,15 @@ export default class Canvas extends Component {
   componentDidUpdate(){
     this.update();
   }
-  getColor(color){
+  getColor(color,{x = 0,y = 0}){
     if(!color){return;}
     if(typeof color === 'string'){return color;}
     var length = color.length;
     if(length === 5){
-      var g = this.ctx.createLinearGradient(...color); 
+      var g = this.ctx.createLinearGradient(color[0] + x,color[1] + y,color[2] + x,color[3] + y); 
     }
     else if(length === 7){
-      var g = this.ctx.createRadialGradient(...color); 
+      var g = this.ctx.createRadialGradient(color[0] + x,color[1] + y,color[2],color[3] + x,color[4] + y,color[5]); 
     }
     var stops = color[color.length - 1];
     for(var i = 0; i < stops.length; i++){
