@@ -552,6 +552,7 @@ function (_Component) {
       var dom = (0, _jquery.default)(this.dom.current);
       this.width = dom.width();
       this.height = dom.height();
+      if(dom[0] === undefined ||dom[0] === null){debugger; return;}
       dom[0].width = this.width;
       dom[0].height = this.height;
 
