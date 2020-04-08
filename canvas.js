@@ -361,7 +361,7 @@ export default class Canvas extends Component {
     this.mousePosition = this.getMousePosition(e); 
     this.eventMode = 'mousedown';
     this.update();
-    if(this.item){this.item.event.mousedown()} 
+    if(this.item){this.item.event.mousedown(this.item)} 
     this.item = false;
     this.eventMode = false;
     if(mouseDown){mouseDown(e,this.mousePosition);} 
@@ -372,7 +372,7 @@ export default class Canvas extends Component {
     this.mousePosition = this.getMousePosition(e);
     this.eventMode = 'mouseup';
     this.update();
-    if(this.item){this.item.event.mouseup();}
+    if(this.item){this.item.event.mouseup(this.item);}
     this.item = false;
     this.eventMode = false;  
     if(mouseUp){mouseUp(e,this.mousePosition)}

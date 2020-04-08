@@ -21,19 +21,23 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(n); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -45,32 +49,36 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
-var _ref = new _rActions.default(),
-    eventHandler = _ref.eventHandler,
-    getClient = _ref.getClient,
-    getValueByRange = _ref.getValueByRange;
+function _createSuper(Derived) { return function () { var Super = _getPrototypeOf(Derived), result; if (_isNativeReflectConstruct()) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-var Canvas =
-/*#__PURE__*/
-function (_Component) {
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+var _RActions = new _rActions.default(),
+    eventHandler = _RActions.eventHandler,
+    getClient = _RActions.getClient,
+    getValueByRange = _RActions.getValueByRange;
+
+var Canvas = /*#__PURE__*/function (_Component) {
   _inherits(Canvas, _Component);
+
+  var _super = _createSuper(Canvas);
 
   function Canvas(props) {
     var _this;
 
     _classCallCheck(this, Canvas);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(Canvas).call(this, props));
+    _this = _super.call(this, props);
     _this.PI = Math.PI / 180;
     _this.dom = (0, _react.createRef)();
     _this.width = 0;
@@ -145,19 +153,20 @@ function (_Component) {
     key: "getRandomColor",
     value: function getRandomColor(color) {
       var range = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 60;
+      return function (color) {
+        function getRGB() {
+          return [range + Math.round(Math.random() * (255 - range)), range + Math.round(Math.random() * (255 - range)), range + Math.round(Math.random() * (255 - range))];
+        }
 
-      function getRGB() {
-        return [range + Math.round(Math.random() * (255 - range)), range + Math.round(Math.random() * (255 - range)), range + Math.round(Math.random() * (255 - range))];
-      }
-
-      var color = getRGB();
-      color[Math.round(Math.random() * 3)] = 0;
-      return {
-        color: "rgb(".concat(color[0], ",").concat(color[1], ",").concat(color[2], ")"),
-        r: color[0],
-        g: color[1],
-        b: color[2]
-      };
+        var color = getRGB();
+        color[Math.round(Math.random() * 3)] = 0;
+        return {
+          color: "rgb(".concat(color[0], ",").concat(color[1], ",").concat(color[2], ")"),
+          r: color[0],
+          g: color[1],
+          b: color[2]
+        };
+      }(color);
     }
   }, {
     key: "getStyle",
@@ -167,10 +176,10 @@ function (_Component) {
     }
   }, {
     key: "getCoordsByPivot",
-    value: function getCoordsByPivot(_ref2) {
-      var pivot = _ref2.pivot,
-          x = _ref2.x,
-          y = _ref2.y;
+    value: function getCoordsByPivot(_ref) {
+      var pivot = _ref.pivot,
+          x = _ref.x,
+          y = _ref.y;
 
       if (!pivot) {
         return {
@@ -471,10 +480,10 @@ function (_Component) {
         var point = [getValueByRange(x, 0, this.width) + coords.x, getValueByRange(y, 0, this.height) + coords.y];
 
         if (r) {
-          var _ref3 = points[i + 1] ? this.getPoint(points[i + 1], points[i]) : points[0],
-              _ref4 = _slicedToArray(_ref3, 2),
-              _x2 = _ref4[0],
-              _y2 = _ref4[1];
+          var _ref2 = points[i + 1] ? this.getPoint(points[i + 1], points[i]) : points[0],
+              _ref3 = _slicedToArray(_ref2, 2),
+              _x2 = _ref3[0],
+              _y2 = _ref3[1];
 
           var nextPoint = [getValueByRange(_x2, 0, this.width) + coords.x, getValueByRange(_y2, 0, this.height) + coords.y];
           this.ctx.arcTo(point[0] * zoom, point[1] * zoom, nextPoint[0] * zoom, nextPoint[1] * zoom, r * zoom);
@@ -552,7 +561,12 @@ function (_Component) {
       var dom = (0, _jquery.default)(this.dom.current);
       this.width = dom.width();
       this.height = dom.height();
-      if(dom[0] === undefined ||dom[0] === null){debugger; return;}
+
+      if (dom[0] === undefined || dom[0] === null) {
+        debugger;
+        return;
+      }
+
       dom[0].width = this.width;
       dom[0].height = this.height;
 
@@ -617,11 +631,11 @@ function (_Component) {
     }
   }, {
     key: "getColor",
-    value: function getColor(color, _ref5) {
-      var _ref5$x = _ref5.x,
-          x = _ref5$x === void 0 ? 0 : _ref5$x,
-          _ref5$y = _ref5.y,
-          y = _ref5$y === void 0 ? 0 : _ref5$y;
+    value: function getColor(color, _ref4) {
+      var _ref4$x = _ref4.x,
+          x = _ref4$x === void 0 ? 0 : _ref4$x,
+          _ref4$y = _ref4.y,
+          y = _ref4$y === void 0 ? 0 : _ref4$y;
 
       if (!color) {
         return;
@@ -650,8 +664,8 @@ function (_Component) {
     }
   }, {
     key: "shadow",
-    value: function shadow(_ref6) {
-      var _shadow = _ref6.shadow;
+    value: function shadow(_ref5) {
+      var _shadow = _ref5.shadow;
 
       if (!_shadow) {
         return;
@@ -703,12 +717,12 @@ function (_Component) {
     }
   }, {
     key: "getTextAlign",
-    value: function getTextAlign(_ref7) {
-      var _ref8 = _slicedToArray(_ref7, 2),
-          _ref8$ = _ref8[0],
-          x = _ref8$ === void 0 ? 0 : _ref8$,
-          _ref8$2 = _ref8[1],
-          y = _ref8$2 === void 0 ? 0 : _ref8$2;
+    value: function getTextAlign(_ref6) {
+      var _ref7 = _slicedToArray(_ref6, 2),
+          _ref7$ = _ref7[0],
+          x = _ref7$ === void 0 ? 0 : _ref7$,
+          _ref7$2 = _ref7[1],
+          y = _ref7$2 === void 0 ? 0 : _ref7$2;
 
       return [['right', 'center', 'left'][x + 1], ['top', 'middle', 'bottom'][y + 1]];
     }
@@ -800,7 +814,7 @@ function (_Component) {
       this.update();
 
       if (this.item) {
-        this.item.event.mousedown();
+        this.item.event.mousedown(this.item);
       }
 
       this.item = false;
@@ -823,7 +837,7 @@ function (_Component) {
       this.update();
 
       if (this.item) {
-        this.item.event.mouseup();
+        this.item.event.mouseup(this.item);
       }
 
       this.item = false;
@@ -835,10 +849,10 @@ function (_Component) {
     }
   }, {
     key: "arcTest",
-    value: function arcTest(_ref9) {
-      var _ref10 = _slicedToArray(_ref9, 2),
-          x = _ref10[0],
-          y = _ref10[1];
+    value: function arcTest(_ref8) {
+      var _ref9 = _slicedToArray(_ref8, 2),
+          x = _ref9[0],
+          y = _ref9[1];
 
       this.ctx.beginPath();
       this.ctx.arc(x, y, 3, 0, 360 * Math.PI / 180);
@@ -899,7 +913,7 @@ function (_Component) {
           id = _this$props9.id,
           style = _this$props9.style,
           className = _this$props9.className;
-      return _react.default.createElement("canvas", {
+      return /*#__PURE__*/_react.default.createElement("canvas", {
         ref: this.dom,
         className: className,
         id: id,
