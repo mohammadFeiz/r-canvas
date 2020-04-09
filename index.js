@@ -553,6 +553,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "update",
     value: function update() {
+      console.log('update');
       this.items = [];
       var _this$props3 = this.props,
           getSize = _this$props3.getSize,
@@ -808,25 +809,22 @@ var Canvas = /*#__PURE__*/function (_Component) {
     value: function mouseDown(e) {
       var _this$props7 = this.props,
           mouseDown = _this$props7.mouseDown,
-          onpan = _this$props7.onpan;
+          onpan = _this$props7.onpan,
+          pan = _this$props7.pan;
       this.mousePosition = this.getMousePosition(e);
       this.eventMode = 'mousedown';
       this.update();
 
-      if (this.item) {
+      if (pan && onpan && this.items.length === 0) {
+        this.panmousedown(e);
+      } else if (this.item) {
         this.item.event.mousedown(this.item);
+      } else if (mouseDown) {
+        mouseDown(e, this.mousePosition);
       }
 
       this.item = false;
       this.eventMode = false;
-
-      if (mouseDown) {
-        mouseDown(e, this.mousePosition);
-      }
-
-      if (onpan && this.items.length === 0) {
-        this.panmousedown(e);
-      }
     }
   }, {
     key: "mouseUp",
@@ -838,14 +836,12 @@ var Canvas = /*#__PURE__*/function (_Component) {
 
       if (this.item) {
         this.item.event.mouseup(this.item);
+      } else if (mouseUp) {
+        mouseUp(e, this.mousePosition);
       }
 
       this.item = false;
       this.eventMode = false;
-
-      if (mouseUp) {
-        mouseUp(e, this.mousePosition);
-      }
     }
   }, {
     key: "arcTest",

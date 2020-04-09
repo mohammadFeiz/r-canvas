@@ -228,7 +228,8 @@ export default class Canvas extends Component {
     var y = p.y - (p.x * s + p.y * c);
     this.ctx.translate(x * zoom,y * zoom);
   }
-  update(){
+  update(){ 
+    console.log('update')
     this.items = [];
     var {getSize,grid,zoom} = this.props;
     var dom = $(this.dom.current);
@@ -306,11 +307,11 @@ export default class Canvas extends Component {
   getTextAlign([x = 0,y = 0]){
     return [['right','center','left'][x + 1],['top','middle','bottom'][y + 1]];
   }
-  getBackground(){
+  getBackground(){ 
     var {grid,zoom} = this.props;
     var [x,y,color = 'rgba(70,70,70,0.3)'] = grid;
     var a = 100 * zoom;
-    var b = x?(getValueByRange(x,0,this.width) * zoom) + 'px':'100%';
+    var b = x?(getValueByRange(x,0,this.width) * zoom) + 'px':'100%'; 
     var c = y?(getValueByRange(y,0,this.height) * zoom) + 'px':'100%';
     var h1 = `linear-gradient(${color} 0px,transparent 0px)`;
     var v1 = `linear-gradient(90deg,${color} 0px, transparent 0px)`;
@@ -357,25 +358,26 @@ export default class Canvas extends Component {
     });
   }
   mouseDown(e){
-    const {mouseDown,onpan} = this.props;
+    const {mouseDown,onpan,pan} = this.props;
     this.mousePosition = this.getMousePosition(e); 
     this.eventMode = 'mousedown';
     this.update();
-    if(this.item){this.item.event.mousedown(this.item)} 
+    if(pan && onpan && this.items.length === 0){this.panmousedown(e);} 
+    else if(this.item){this.item.event.mousedown(this.item)} 
+    else if(mouseDown){mouseDown(e,this.mousePosition);}  
     this.item = false;
     this.eventMode = false;
-    if(mouseDown){mouseDown(e,this.mousePosition);} 
-    if(onpan && this.items.length === 0){this.panmousedown(e);} 
   } 
   mouseUp(e){
-    const {mouseUp} = this.props;
+    const {mouseUp} = this.props; 
     this.mousePosition = this.getMousePosition(e);
     this.eventMode = 'mouseup';
     this.update();
     if(this.item){this.item.event.mouseup(this.item);}
+    else if(mouseUp){mouseUp(e,this.mousePosition)}
     this.item = false;
     this.eventMode = false;  
-    if(mouseUp){mouseUp(e,this.mousePosition)}
+    
   }
   arcTest([x,y]){
     this.ctx.beginPath();
