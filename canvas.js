@@ -235,7 +235,7 @@ export default class Canvas extends Component {
     var dom = $(this.dom.current);
     this.width = dom.width();
     this.height = dom.height();
-    if(dom[0] === undefined ||dom[0] === null){debugger; return;}
+    if(dom[0] === undefined ||dom[0] === null){return;}
     dom[0].width = this.width;
     dom[0].height = this.height; 
     var [x = '50%',y = '50%'] = this.props.axisPosition;

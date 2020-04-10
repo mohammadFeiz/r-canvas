@@ -564,7 +564,6 @@ var Canvas = /*#__PURE__*/function (_Component) {
       this.height = dom.height();
 
       if (dom[0] === undefined || dom[0] === null) {
-        debugger;
         return;
       }
 
