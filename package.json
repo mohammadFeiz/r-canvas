@@ -1,6 +1,6 @@
 {
   "name": "r-canvas",
-  "version": "2.0.29",
+  "version": "2.0.30",
   "description": "react canvas library",
   "main": "index.js",
   "scripts": {
@@ -8,8 +8,6 @@
   },
   "dependencies": {
     "jquery": "^3.4.1",
-    "r-actions": "^1.0.15",
-    "r-geometric": "^1.0.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0"
   },
