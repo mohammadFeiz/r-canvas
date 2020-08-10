@@ -1,6 +1,6 @@
 {
   "name": "r-canvas",
-  "version": "2.0.28",
+  "version": "2.0.29",
   "description": "react canvas library",
   "main": "index.js",
   "scripts": {
