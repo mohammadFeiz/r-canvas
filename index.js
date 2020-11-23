@@ -1,5 +1,7 @@
 "use strict";
 
+function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,8 +16,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _instanceof(left, right) { if (right != null && typeof Symbol !== "undefined" && right[Symbol.hasInstance]) { return !!right[Symbol.hasInstance](left); } else { return left instanceof right; } }
 
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
@@ -74,11 +74,8 @@ var Canvas = /*#__PURE__*/function (_Component) {
     _this.dom = /*#__PURE__*/(0, _react.createRef)();
     _this.width = 0;
     _this.height = 0;
-    _this.isMobile = 'ontouchstart' in document.documentElement ? true : false;
-    (0, _jquery.default)(window).on('resize', _this.resize.bind(_assertThisInitialized(_this)));
-    _this.oc = 5;
+    (0, _jquery.default)(window).on("resize", _this.resize.bind(_assertThisInitialized(_this)));
     _this.mousePosition = [Infinity, Infinity];
-    _this.touch = 'ontouchstart' in document.documentElement;
     return _this;
   }
 
@@ -126,13 +123,13 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "getPointOfLine",
     value: function getPointOfLine(a, b, obj) {
-      if (_typeof(a) !== 'object' || _typeof(obj) !== 'object') {
+      if (_typeof(a) !== "object" || _typeof(obj) !== "object") {
         return false;
       }
 
       var typeB = _typeof(b);
 
-      var dip = typeB === 'object' ? this.getDip(a, b) : b;
+      var dip = typeB === "object" ? this.getDip(a, b) : b;
       var x = obj.x,
           y = obj.y;
 
@@ -157,11 +154,11 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "getPrependicularPointFromLine",
     value: function getPrependicularPointFromLine(p1, p2, p, offset) {
-      if (p === 'center') {
+      if (p === "center") {
         p = this.getAvg(p1, p2);
-      } else if (p === 'start') {
+      } else if (p === "start") {
         p = p1;
-      } else if (p === 'end') {
+      } else if (p === "end") {
         p = p2;
       }
 
@@ -188,27 +185,27 @@ var Canvas = /*#__PURE__*/function (_Component) {
         return false;
       }
 
-      ;
       var x = meet[0],
           y = meet[1];
-      var a1 = this.getAngle(meet, p1);
-      var a2 = this.getAngle(meet, p2);
-      var a3 = this.getAngle(meet, p3);
+      var a1 = this.getAngle(meet, p1),
+          a2 = this.getAngle(meet, p2),
+          a3 = this.getAngle(meet, p3);
+      var slice;
 
       if (a1 < a2 && a2 < a3) {
-        var slice = [a1, a3];
+        slice = [a1, a3];
       } else if (a2 < a3 && a3 < a1) {
-        var slice = [a1, a3];
+        slice = [a1, a3];
       } else if (a3 < a1 && a1 < a2) {
-        var slice = [a1, a3];
+        slice = [a1, a3];
       } else if (a3 < a2 && a2 < a1) {
-        var slice = [a3, a1];
+        slice = [a3, a1];
       } else if (a1 < a3 && a3 < a2) {
-        var slice = [a3, a1];
+        slice = [a3, a1];
       } else if (a2 < a1 && a1 < a3) {
-        var slice = [a3, a1];
+        slice = [a3, a1];
       } else {
-        var slice = [0, 0];
+        slice = [0, 0];
       }
 
       return {
@@ -251,24 +248,24 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "eventHandler",
     value: function eventHandler(selector, event, action) {
-      var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'bind';
+      var type = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "bind";
       var me = {
         mousedown: "touchstart",
         mousemove: "touchmove",
         mouseup: "touchend"
       };
-      event = this.touch ? me[event] : event;
+      event = "ontouchstart" in document.documentElement ? me[event] : event;
       var element = typeof selector === "string" ? selector === "window" ? (0, _jquery.default)(window) : (0, _jquery.default)(selector) : selector;
       element.unbind(event, action);
 
-      if (type === 'bind') {
+      if (type === "bind") {
         element.bind(event, action);
       }
     }
   }, {
     key: "getClient",
     value: function getClient(e) {
-      return this.touch ? {
+      return "ontouchstart" in document.documentElement ? {
         x: e.changedTouches[0].clientX,
         y: e.changedTouches[0].clientY
       } : {
@@ -285,11 +282,11 @@ var Canvas = /*#__PURE__*/function (_Component) {
         return start;
       }
 
-      if (type === 'number') {
+      if (type === "number") {
         return value;
       }
 
-      if (type === 'function') {
+      if (type === "function") {
         return value(start, end);
       }
 
@@ -303,105 +300,105 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "validateItem",
     value: function validateItem(item) {
-      if (typeof item.showPivot !== 'boolean') {
-        console.error('r-canvas => item.showPivot must be boolean!!!');
+      if (typeof item.showPivot !== "boolean") {
+        console.error("r-canvas => item.showPivot must be boolean!!!");
       }
 
-      if (['bevel', 'round', 'miter'].indexOf(item.lineJoin) === -1) {
-        console.error('r-canvas => item.lineJoin must be bevel,round or miter!!!');
+      if (["bevel", "round", "miter"].indexOf(item.lineJoin) === -1) {
+        console.error("r-canvas => item.lineJoin must be bevel,round or miter!!!");
       }
 
-      if (['butt', 'round', 'square'].indexOf(item.lineCap) === -1) {
-        console.error('r-canvas => item.lineCap must be butt,round or square!!!');
+      if (["butt", "round", "square"].indexOf(item.lineCap) === -1) {
+        console.error("r-canvas => item.lineCap must be butt,round or square!!!");
       }
 
-      if (['number', 'string'].indexOf(_typeof(item.rotate)) === -1) {
+      if (["number", "string"].indexOf(_typeof(item.rotate)) === -1) {
         console.error('r-canvas =>item.rotate must be number or string contain number and "%"(example:120 or "50%")!!!');
       }
 
-      if (typeof item.rotate === 'string' && item.rotate.indexOf('%') === -1) {
+      if (typeof item.rotate === "string" && item.rotate.indexOf("%") === -1) {
         console.error('r-canvas =>missing "%" in item.rotate string!!!');
       }
 
       if (isNaN(item.angle)) {
-        console.error('r-canvas => item.angle must be number!!!');
+        console.error("r-canvas => item.angle must be number!!!");
       }
 
-      if (['number', 'string'].indexOf(_typeof(item.x)) === -1) {
+      if (["number", "string"].indexOf(_typeof(item.x)) === -1) {
         console.error('r-canvas =>item.x must be number or string contain number and "%"(example:120 or "50%")!!!');
       }
 
-      if (typeof item.x === 'string' && item.x.indexOf('%') === -1) {
+      if (typeof item.x === "string" && item.x.indexOf("%") === -1) {
         console.error('r-canvas =>missing "%" in item.x string!!!');
       }
 
       if (isNaN(item.x)) {
-        console.error('r-canvas => item.x must be number!!!');
+        console.error("r-canvas => item.x must be number!!!");
       }
 
-      if (['number', 'string'].indexOf(_typeof(item.y)) === -1) {
+      if (["number", "string"].indexOf(_typeof(item.y)) === -1) {
         console.error('r-canvas =>item.y must be number or string contain number and "%"(example:120 or "50%")!!!');
       }
 
-      if (typeof item.y === 'string' && item.y.indexOf('%') === -1) {
+      if (typeof item.y === "string" && item.y.indexOf("%") === -1) {
         console.error('r-canvas =>missing "%" in item.y string!!!');
       }
 
       if (isNaN(item.y)) {
-        console.error('r-canvas => item.y must be number!!!');
+        console.error("r-canvas => item.y must be number!!!");
       }
 
       if (isNaN(item.lineWidth) || item.lineWidth < 0) {
-        console.error('r-canvas => item.lineWidth must be number >= 0!!!');
+        console.error("r-canvas => item.lineWidth must be number >= 0!!!");
       }
 
       if (isNaN(item.opacity) || item.opacity < 0 || item.opacity > 1) {
-        console.error('r-canvas => item.opacity must be a number between 0 and 1!!!');
+        console.error("r-canvas => item.opacity must be a number between 0 and 1!!!");
       }
 
       if (item.arcPoints) {
         if (!Array.isArray(item.arcPoints) || item.arcPoints.length !== 3) {
-          console.error('r-canvas => item.arcPoints must be an array with 3 member!!!');
+          console.error("r-canvas => item.arcPoints must be an array with 3 member!!!");
         }
       }
 
       if (item.pivot) {
         if (!Array.isArray(item.pivot) || item.pivot.length !== 2) {
-          console.error('r-canvas => item.pivot must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.pivot must be an array with 2 numeric member!!!");
         }
       }
 
       if (item.dash) {
         if (!Array.isArray(item.dash) || item.dash.length !== 2) {
-          console.error('r-canvas => item.dash must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.dash must be an array with 2 numeric member!!!");
         }
       }
 
       if (item.slice) {
         if (!Array.isArray(item.slice) || item.slice.length !== 2) {
-          console.error('r-canvas => item.slice must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.slice must be an array with 2 numeric member!!!");
         }
       }
 
       if (item.trianglePoints !== undefined) {
         if (!Array.isArray(item.trianglePoints) || item.trianglePoints.length !== 2) {
-          console.error('r-canvas => item.trianglePoint must be an array with 2 member!!!');
+          console.error("r-canvas => item.trianglePoint must be an array with 2 member!!!");
         }
 
         if (!Array.isArray(item.trianglePoints[0]) || item.trianglePoints[0].length !== 2) {
-          console.error('r-canvas => item.trianglePoint[0] must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.trianglePoint[0] must be an array with 2 numeric member!!!");
         }
 
         if (!Array.isArray(item.trianglePoints[1]) || item.trianglePoints[1].length !== 2) {
-          console.error('r-canvas => item.trianglePoint[1] must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.trianglePoint[1] must be an array with 2 numeric member!!!");
         }
 
         if (!Array.isArray(item.trianglePoints[0]) || item.trianglePoints[0].length !== 2) {
-          console.error('r-canvas => item.trianglePoint[0] must be an array with 2 numeric member!!!');
+          console.error("r-canvas => item.trianglePoint[0] must be an array with 2 numeric member!!!");
         }
 
         if (isNaN(item.trianglewidth) || item.triangleWidth < 0) {
-          console.error('r-canvas => item.triangleWidth must be a number greater than or equal 0');
+          console.error("r-canvas => item.triangleWidth must be a number greater than or equal 0");
         }
       }
     }
@@ -442,35 +439,24 @@ var Canvas = /*#__PURE__*/function (_Component) {
       }(color);
     }
   }, {
-    key: "getStyle",
-    value: function getStyle() {
-      var style = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return style;
-    }
-  }, {
     key: "getCoordsByPivot",
-    value: function getCoordsByPivot(_ref) {
-      var pivot = _ref.pivot,
-          x = _ref.x,
-          y = _ref.y;
+    value: function getCoordsByPivot(item) {
+      var pivot = item.pivot,
+          x = item.x,
+          y = item.y;
 
       if (!pivot) {
-        return {
-          x: x,
-          y: y
-        };
+        return [x, y];
       }
 
-      var _pivot = _slicedToArray(pivot, 2),
-          _pivot$ = _pivot[0],
-          px = _pivot$ === void 0 ? 0 : _pivot$,
-          _pivot$2 = _pivot[1],
-          py = _pivot$2 === void 0 ? 0 : _pivot$2;
+      var _ref = typeof pivot === "function" ? pivot(item) : pivot,
+          _ref2 = _slicedToArray(_ref, 2),
+          _ref2$ = _ref2[0],
+          px = _ref2$ === void 0 ? 0 : _ref2$,
+          _ref2$2 = _ref2[1],
+          py = _ref2$2 === void 0 ? 0 : _ref2$2;
 
-      return {
-        x: x - this.getValueByRange(px, 0, this.width),
-        y: y - this.getValueByRange(py, 0, this.height)
-      };
+      return [x - this.getValueByRange(px, 0, this.width), y - this.getValueByRange(py, 0, this.height)];
     }
   }, {
     key: "getItem",
@@ -485,23 +471,27 @@ var Canvas = /*#__PURE__*/function (_Component) {
           _parent$opacity = parent.opacity,
           parentOpacity = _parent$opacity === void 0 ? 1 : _parent$opacity;
       var debugMode = this.props.debugMode;
-      item = typeof item === 'function' ? { ...item(this.props)
+      item = typeof item === "function" ? { ...item(this.props)
       } : item; //set default props
 
-      item.showPivot = item.showPivot || false;
-      item.lineJoin = item.lineJoin || 'miter';
-      item.lineCap = item.lineCap || 'butt';
-      item.rotate = item.rotate || 0;
-      item.angle = item.angle || 0;
-      item.x = item.x || 0;
-      item.y = item.y || 0;
-      item.lineWidth = item.lineWidth === undefined ? 1 : item.lineWidth;
-      item.opacity = item.opacity || 1;
+      item = { ...{
+          showPivot: false,
+          lineJoin: "miter",
+          lineCap: "butt",
+          rotate: 0,
+          angle: 0,
+          x: 0,
+          y: 0,
+          lineWidth: 1,
+          opacity: 1
+        },
+        ...item
+      };
       item.rect = false;
 
       if (!item.stroke && !item.fill) {
-        item.stroke = '#000';
-      } //validate item 
+        item.stroke = "#000";
+      } //validate item
 
 
       if (debugMode) {
@@ -513,13 +503,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
       item.x = this.getValueByRange(item.x, 0, this.width) + parentx;
       item.y = this.getValueByRange(item.y, 0, this.height) + parenty;
       item.opacity *= parentOpacity;
-      item.coords = this.getCoordsByPivot({
-        x: item.x,
-        y: item.y,
-        pivot: item.pivot
-      }); //converts
+      item.pivotedCoords = this.getCoordsByPivot(item); //converts
 
-      if (item.width !== undefined || item.height !== undefined) {
+      if (item.image) {} else if (item.width !== undefined || item.height !== undefined) {
         var _item = item,
             _item$width = _item.width,
             _width = _item$width === void 0 ? 20 : _item$width,
@@ -542,9 +528,11 @@ var Canvas = /*#__PURE__*/function (_Component) {
             c3 = _corner$4 === void 0 ? 0 : _corner$4;
 
         item.rect = true;
-        var _item$coords = item.coords,
-            x = _item$coords.x,
-            y = _item$coords.y;
+
+        var _item$pivotedCoords = _slicedToArray(item.pivotedCoords, 2),
+            x = _item$pivotedCoords[0],
+            y = _item$pivotedCoords[1];
+
         item.points = [[x + _width / 2, y], [x + _width, y, c1], [x + _width, y + height, c2], [x, y + height, c3], [x, y, c0], [x + _width / 2, y, c1]];
       } else if (item.arcPoints) {
         var _item2 = item,
@@ -566,20 +554,22 @@ var Canvas = /*#__PURE__*/function (_Component) {
             p2 = _trianglePoints2[1];
 
         var width = triangleWidth;
-        var t1 = this.getPrependicularPointFromLine(p1, p2, 'start', width / 2);
-        var t2 = this.getPrependicularPointFromLine(p1, p2, 'start', -width / 2);
+        var t1 = this.getPrependicularPointFromLine(p1, p2, "start", width / 2);
+        var t2 = this.getPrependicularPointFromLine(p1, p2, "start", -width / 2);
         item.points = [[p1[0], p1[1], _corner2[0]], [t1.x, t1.y, _corner2[1]], [p2[0], p2[1], _corner2[2]], [t2.x, t2.y], p1];
       } //set type
 
 
       if (item.items) {
-        item.type = 'Group';
+        item.type = "Group";
       } else if (item.points) {
-        item.type = 'Line';
+        item.type = "Line";
       } else if (item.r) {
-        item.type = 'Arc';
+        item.type = "Arc";
+      } else if (item.image) {
+        item.type = "Image";
       } else if (item.text !== undefined) {
-        item.type = 'Text';
+        item.type = "Text";
       }
 
       return item;
@@ -590,22 +580,12 @@ var Canvas = /*#__PURE__*/function (_Component) {
       var items = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.props.items;
       var parent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-      //مشخصات پرنت رو بگیر 
-      var _parent$x2 = parent.x,
-          parentx = _parent$x2 === void 0 ? 0 : _parent$x2,
-          _parent$y2 = parent.y,
-          parenty = _parent$y2 === void 0 ? 0 : _parent$y2,
-          _parent$rotate2 = parent.rotate,
-          parentrotate = _parent$rotate2 === void 0 ? 0 : _parent$rotate2,
-          _parent$opacity2 = parent.opacity,
-          parentOpacity = _parent$opacity2 === void 0 ? 1 : _parent$opacity2;
-      var _this$props = this.props,
-          rotateSetting = _this$props.rotateSetting,
-          zoom = _this$props.zoom,
+      var Items = typeof items === "function" ? items() : items;
+      var zoom = this.props.zoom,
           ctx = this.ctx;
 
-      for (var i = 0; i < items.length; i++) {
-        var item = this.getItem(items[i], parent);
+      for (var i = 0; i < Items.length; i++) {
+        var item = this.getItem(Items[i], parent);
 
         if (item.show === false) {
           continue;
@@ -613,33 +593,29 @@ var Canvas = /*#__PURE__*/function (_Component) {
 
         ctx.save();
         ctx.beginPath();
-        this.rotate(item.rotate, {
-          x: item.x,
-          y: item.y
-        });
-        this.rotate(item.angle, item.coords);
+        this.rotate(item.rotate, [item.x, item.y]);
         ctx.globalAlpha = item.opacity;
         ctx.lineCap = item.lineCap;
         ctx.lineJoin = item.lineJoin;
         this.shadow(item, ctx);
         item.dash && ctx.setLineDash(item.dash);
         ctx.lineWidth = item.lineWidth * zoom;
-        ctx.strokeStyle = item.stroke === 'random' ? this.getRandomColor().color : this.getColor(item.stroke, item.coords);
-        ctx.fillStyle = item.fill === 'random' ? this.getRandomColor().color : this.getColor(item.fill, item.coords);
+        ctx.strokeStyle = item.stroke === "random" ? this.getRandomColor().color : this.getColor(item.stroke, item.pivotedCoords);
+        ctx.fillStyle = item.fill === "random" ? this.getRandomColor().color : this.getColor(item.fill, item.pivotedCoords);
         var Index = index.concat(i);
 
         if (item.type) {
-          this['draw' + item.type](item, Index);
+          this["draw" + item.type](item, Index);
         } else {
-          var str = 'items[' + Index.join('].items[') + ']';
-          console.error('r-canvas => receive invalid item in ' + str);
+          var str = "items[" + Index.join("].items[") + "]";
+          console.error("r-canvas => receive invalid item in " + str);
         }
 
         if (item.showPivot) {
           this.showPivot(item.x, item.y);
         }
 
-        if (this.eventMode && item.event && item.event[this.eventMode]) {
+        if (this.eventMode && item[this.eventMode]) {
           var X = this.mousePosition[0] + this.axisPosition[0];
           var Y = this.mousePosition[1] + this.axisPosition[1];
 
@@ -657,28 +633,35 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "drawGroup",
     value: function drawGroup(item, index) {
+      var _item$pivotedCoords2 = _slicedToArray(item.pivotedCoords, 2),
+          X = _item$pivotedCoords2[0],
+          Y = _item$pivotedCoords2[1];
+
       this.draw(item.items, {
-        x: item.coords.x,
-        y: item.coords.y,
+        x: X,
+        y: Y,
         rotate: item.rotate,
         opacity: item.opacity
       }, index);
     }
   }, {
     key: "drawText",
-    value: function drawText(_ref2) {
-      var _ref2$align = _ref2.align,
-          align = _ref2$align === void 0 ? [0, 0] : _ref2$align,
-          _ref2$fontSize = _ref2.fontSize,
-          fontSize = _ref2$fontSize === void 0 ? 12 : _ref2$fontSize,
-          _ref2$text = _ref2.text,
-          text = _ref2$text === void 0 ? 'Text' : _ref2$text,
-          fill = _ref2.fill,
-          stroke = _ref2.stroke,
-          coords = _ref2.coords;
-      var zoom = this.props.zoom;
+    value: function drawText(_ref3) {
+      var _ref3$align = _ref3.align,
+          align = _ref3$align === void 0 ? [0, 0] : _ref3$align,
+          _ref3$fontSize = _ref3.fontSize,
+          fontSize = _ref3$fontSize === void 0 ? 12 : _ref3$fontSize,
+          _ref3$text = _ref3.text,
+          text = _ref3$text === void 0 ? "Text" : _ref3$text,
+          fill = _ref3.fill,
+          stroke = _ref3.stroke,
+          pivotedCoords = _ref3.pivotedCoords;
 
-      var _this$getTextAlign = this.getTextAlign(align),
+      var zoom = this.props.zoom,
+          _pivotedCoords = _slicedToArray(pivotedCoords, 2),
+          X = _pivotedCoords[0],
+          Y = _pivotedCoords[1],
+          _this$getTextAlign = this.getTextAlign(align),
           _this$getTextAlign2 = _slicedToArray(_this$getTextAlign, 2),
           textAlign = _this$getTextAlign2[0],
           textBaseline = _this$getTextAlign2[1];
@@ -686,49 +669,80 @@ var Canvas = /*#__PURE__*/function (_Component) {
       this.ctx.textAlign = textAlign;
       this.ctx.textBaseline = textBaseline;
       this.ctx.font = fontSize * zoom + "px arial";
-      stroke && this.ctx.strokeText(text, coords.x * zoom, coords.y * zoom);
-      fill && this.ctx.fillText(text, coords.x * zoom, coords.y * zoom);
+      stroke && this.ctx.strokeText(text, X * zoom, Y * zoom);
+      fill && this.ctx.fillText(text, X * zoom, Y * zoom);
+    }
+  }, {
+    key: "drawImage",
+    value: function drawImage(_ref4) {
+      var _this3 = this;
+
+      var pivotedCoords = _ref4.pivotedCoords,
+          width = _ref4.width,
+          height = _ref4.height,
+          image = _ref4.image;
+      var zoom = this.props.zoom;
+
+      var _pivotedCoords2 = _slicedToArray(pivotedCoords, 2),
+          X = _pivotedCoords2[0],
+          Y = _pivotedCoords2[1];
+
+      var fr = new FileReader();
+      var img;
+
+      fr.onload = function () {
+        img = new Image();
+
+        img.onload = function () {
+          return _this3.ctx.drawImage(img, X * zoom, Y * zoom, width * zoom, height * zoom);
+        };
+
+        img.src = fr.result;
+      };
+
+      fr.readAsDataURL(image);
     }
   }, {
     key: "drawLine",
-    value: function drawLine(_ref3) {
-      var points = _ref3.points,
-          close = _ref3.close,
-          stroke = _ref3.stroke,
-          fill = _ref3.fill,
-          coords = _ref3.coords,
-          rect = _ref3.rect;
+    value: function drawLine(_ref5) {
+      var points = _ref5.points,
+          close = _ref5.close,
+          stroke = _ref5.stroke,
+          fill = _ref5.fill,
+          pivotedCoords = _ref5.pivotedCoords,
+          rect = _ref5.rect;
 
-      if (points < 1) {
+      if (points.length < 1) {
         return false;
       }
 
-      var Coords = rect ? {
-        x: 0,
-        y: 0
-      } : coords;
+      var Coords = rect ? [0, 0] : pivotedCoords;
+
+      var _Coords = _slicedToArray(Coords, 2),
+          X = _Coords[0],
+          Y = _Coords[1];
+
       var zoom = this.props.zoom;
-      var start = [this.getValueByRange(points[0][0], 0, this.width) + Coords.x, this.getValueByRange(points[0][1], 0, this.height) + Coords.y];
+      var start = [this.getValueByRange(points[0][0], 0, this.width) + X, this.getValueByRange(points[0][1], 0, this.height) + Y];
       this.ctx.moveTo(start[0] * zoom, start[1] * zoom);
       var beforePoint = points[0];
 
       for (var i = 1; i < points.length; i++) {
-        var _this$getPoint = this.getPoint(points[i], beforePoint),
-            _this$getPoint2 = _slicedToArray(_this$getPoint, 3),
-            x = _this$getPoint2[0],
-            y = _this$getPoint2[1],
-            r = _this$getPoint2[2];
+        var _points$i = _slicedToArray(points[i], 3),
+            x = _points$i[0],
+            y = _points$i[1],
+            r = _points$i[2];
 
         beforePoint = [x, y];
-        var point = [this.getValueByRange(x, 0, this.width) + Coords.x, this.getValueByRange(y, 0, this.height) + Coords.y];
+        var point = [this.getValueByRange(x, 0, this.width) + X, this.getValueByRange(y, 0, this.height) + Y];
 
         if (r) {
-          var _ref4 = points[i + 1] ? this.getPoint(points[i + 1], points[i]) : points[0],
-              _ref5 = _slicedToArray(_ref4, 2),
-              _x = _ref5[0],
-              _y = _ref5[1];
+          var _ref6 = points[i + 1] ? points[i + 1] : points[0],
+              _ref7 = _slicedToArray(_ref6, 2),
+              _x = _ref7[0],
+              _y = _ref7[1];
 
-          var nextPoint = [this.getValueByRange(_x, 0, this.width) + Coords.x, this.getValueByRange(_y, 0, this.height) + Coords.y];
+          var nextPoint = [this.getValueByRange(_x, 0, this.width) + X, this.getValueByRange(_y, 0, this.height) + Y];
           this.ctx.arcTo(point[0] * zoom, point[1] * zoom, nextPoint[0] * zoom, nextPoint[1] * zoom, r * zoom);
         } else {
           this.ctx.lineTo(point[0] * zoom, point[1] * zoom);
@@ -744,43 +758,34 @@ var Canvas = /*#__PURE__*/function (_Component) {
     }
   }, {
     key: "drawArc",
-    value: function drawArc(_ref6) {
-      var coords = _ref6.coords,
-          r = _ref6.r,
-          _ref6$slice = _ref6.slice,
-          slice = _ref6$slice === void 0 ? [0, 360] : _ref6$slice,
-          fill = _ref6.fill,
-          stroke = _ref6.stroke;
+    value: function drawArc(_ref8) {
+      var pivotedCoords = _ref8.pivotedCoords,
+          r = _ref8.r,
+          _ref8$slice = _ref8.slice,
+          slice = _ref8$slice === void 0 ? [0, 360] : _ref8$slice,
+          fill = _ref8.fill,
+          stroke = _ref8.stroke;
+
+      var _pivotedCoords3 = _slicedToArray(pivotedCoords, 2),
+          X = _pivotedCoords3[0],
+          Y = _pivotedCoords3[1];
+
       var _this$props$rotateSet = this.props.rotateSetting.direction,
-          direction = _this$props$rotateSet === void 0 ? 'clock' : _this$props$rotateSet;
+          direction = _this$props$rotateSet === void 0 ? "clock" : _this$props$rotateSet;
       r = this.getValueByRange(r, this.width, this.height);
       r = r < 0 ? 0 : r;
       slice = [this.getValueByRange(slice[0], 0, 360), this.getValueByRange(slice[1], 0, 360)];
 
-      if (direction === 'clockwise') {
+      if (direction === "clockwise") {
         var a = slice[0],
             b = slice[1];
         slice = [-b, -a];
       }
 
       var zoom = this.props.zoom;
-      this.ctx.arc(coords.x * zoom, coords.y * zoom, r * zoom, slice[0] * this.PI, slice[1] * this.PI);
+      this.ctx.arc(X * zoom, Y * zoom, r * zoom, slice[0] * this.PI, slice[1] * this.PI);
       stroke && this.ctx.stroke();
       fill && this.ctx.fill();
-    }
-  }, {
-    key: "getLineBySMA",
-    value: function getLineBySMA(_ref7) {
-      var p1 = _ref7.p1,
-          measure = _ref7.measure,
-          angle = _ref7.angle;
-      return {
-        p1: p1,
-        p2: {
-          x: p1.x + Math.cos(angle * Math.PI / 180) * measure,
-          y: p1.y + Math.sin(angle * -1 * Math.PI / 180) * measure
-        }
-      };
     }
   }, {
     key: "showPivot",
@@ -793,54 +798,44 @@ var Canvas = /*#__PURE__*/function (_Component) {
       ctx.moveTo(x, y - 15);
       ctx.lineTo(x, y + 15);
       ctx.lineWidth = 2;
-      ctx.strokeStyle = 'rgba(255,100,0,.3)';
+      ctx.strokeStyle = "rgba(255,100,0,.3)";
       ctx.stroke();
       ctx.closePath();
-    }
-  }, {
-    key: "getPoint",
-    value: function getPoint(point, beforePoint) {
-      if (Array.isArray(point)) {
-        return point;
-      }
-
-      return this.getLineBySLA(beforePoint, point.length, point.angle).p2;
     }
   }, {
     key: "rotate",
     value: function rotate() {
       var angle = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-      var center = arguments.length > 1 ? arguments[1] : undefined;
+
+      var _ref9 = arguments.length > 1 ? arguments[1] : undefined,
+          _ref10 = _slicedToArray(_ref9, 2),
+          X = _ref10[0],
+          Y = _ref10[1];
 
       if (angle === 0) {
         return;
       }
 
-      var _this$props2 = this.props,
-          zoom = _this$props2.zoom,
-          rotateSetting = _this$props2.rotateSetting;
+      var _this$props = this.props,
+          zoom = _this$props.zoom,
+          rotateSetting = _this$props.rotateSetting;
       var _rotateSetting$direct = rotateSetting.direction,
-          direction = _rotateSetting$direct === void 0 ? 'clock' : _rotateSetting$direct;
-      angle = angle * this.PI * (direction === 'clockwise' ? -1 : 1);
+          direction = _rotateSetting$direct === void 0 ? "clock" : _rotateSetting$direct;
+      angle = angle * this.PI * (direction === "clockwise" ? -1 : 1);
       var s = Math.sin(angle),
           c = Math.cos(angle);
-      var p = {
-        x: center.x,
-        y: -center.y
-      };
       this.ctx.rotate(angle);
-      var x = p.x * c - p.y * s - p.x;
-      var y = p.y - (p.x * s + p.y * c);
+      var x = X * c - -Y * s - X;
+      var y = -Y - (X * s + -Y * c);
       this.ctx.translate(x * zoom, y * zoom);
     }
   }, {
     key: "update",
     value: function update() {
-      this.items = [];
-      var _this$props3 = this.props,
-          getSize = _this$props3.getSize,
-          grid = _this$props3.grid,
-          zoom = _this$props3.zoom;
+      var _this$props2 = this.props,
+          getSize = _this$props2.getSize,
+          grid = _this$props2.grid,
+          zoom = _this$props2.zoom;
       var dom = (0, _jquery.default)(this.dom.current);
       this.width = dom.width();
       this.height = dom.height();
@@ -854,9 +849,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
 
       var _this$props$axisPosit = _slicedToArray(this.props.axisPosition, 2),
           _this$props$axisPosit2 = _this$props$axisPosit[0],
-          x = _this$props$axisPosit2 === void 0 ? '50%' : _this$props$axisPosit2,
+          x = _this$props$axisPosit2 === void 0 ? "50%" : _this$props$axisPosit2,
           _this$props$axisPosit3 = _this$props$axisPosit[1],
-          y = _this$props$axisPosit3 === void 0 ? '50%' : _this$props$axisPosit3;
+          y = _this$props$axisPosit3 === void 0 ? "50%" : _this$props$axisPosit3;
 
       this.axisPosition = [this.getValueByRange(x, 0, this.width), this.getValueByRange(y, 0, this.height)];
 
@@ -889,7 +884,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
     key: "drawAxes",
     value: function drawAxes() {
       var dash = [3, 3],
-          stroke = '#000';
+          stroke = "#000";
       this.draw([{
         points: [[0, -4002], [0, 4000]],
         stroke: stroke,
@@ -913,17 +908,17 @@ var Canvas = /*#__PURE__*/function (_Component) {
     }
   }, {
     key: "getColor",
-    value: function getColor(color, _ref8) {
-      var _ref8$x = _ref8.x,
-          x = _ref8$x === void 0 ? 0 : _ref8$x,
-          _ref8$y = _ref8.y,
-          y = _ref8$y === void 0 ? 0 : _ref8$y;
+    value: function getColor(color, _ref11) {
+      var _ref11$x = _ref11.x,
+          x = _ref11$x === void 0 ? 0 : _ref11$x,
+          _ref11$y = _ref11.y,
+          y = _ref11$y === void 0 ? 0 : _ref11$y;
 
       if (!color) {
         return;
       }
 
-      if (typeof color === 'string') {
+      if (typeof color === "string") {
         return color;
       }
 
@@ -938,7 +933,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
       var stops = color[color.length - 1];
 
       for (var i = 0; i < stops.length; i++) {
-        var s = stops[i].split(' ');
+        var s = stops[i].split(" ");
         g.addColorStop(s[0], s[1]);
       }
 
@@ -946,8 +941,8 @@ var Canvas = /*#__PURE__*/function (_Component) {
     }
   }, {
     key: "shadow",
-    value: function shadow(_ref9) {
-      var _shadow = _ref9.shadow;
+    value: function shadow(_ref12) {
+      var _shadow = _ref12.shadow;
 
       if (!_shadow) {
         return;
@@ -999,31 +994,31 @@ var Canvas = /*#__PURE__*/function (_Component) {
     }
   }, {
     key: "getTextAlign",
-    value: function getTextAlign(_ref10) {
-      var _ref11 = _slicedToArray(_ref10, 2),
-          _ref11$ = _ref11[0],
-          x = _ref11$ === void 0 ? 0 : _ref11$,
-          _ref11$2 = _ref11[1],
-          y = _ref11$2 === void 0 ? 0 : _ref11$2;
+    value: function getTextAlign(_ref13) {
+      var _ref14 = _slicedToArray(_ref13, 2),
+          _ref14$ = _ref14[0],
+          x = _ref14$ === void 0 ? 0 : _ref14$,
+          _ref14$2 = _ref14[1],
+          y = _ref14$2 === void 0 ? 0 : _ref14$2;
 
-      return [['right', 'center', 'left'][x + 1], ['top', 'middle', 'bottom'][y + 1]];
+      return [["right", "center", "left"][x + 1], ["top", "middle", "bottom"][y + 1]];
     }
   }, {
     key: "getBackground",
     value: function getBackground() {
-      var _this$props4 = this.props,
-          grid = _this$props4.grid,
-          zoom = _this$props4.zoom;
+      var _this$props3 = this.props,
+          grid = _this$props3.grid,
+          zoom = _this$props3.zoom;
 
       var _grid = _slicedToArray(grid, 3),
           x = _grid[0],
           y = _grid[1],
           _grid$ = _grid[2],
-          color = _grid$ === void 0 ? 'rgba(70,70,70,0.3)' : _grid$;
+          color = _grid$ === void 0 ? "rgba(70,70,70,0.3)" : _grid$;
 
       var a = 100 * zoom;
-      var b = x ? this.getValueByRange(x, 0, this.width) * zoom + 'px' : '100%';
-      var c = y ? this.getValueByRange(y, 0, this.height) * zoom + 'px' : '100%';
+      var b = x ? this.getValueByRange(x, 0, this.width) * zoom + "px" : "100%";
+      var c = y ? this.getValueByRange(y, 0, this.height) * zoom + "px" : "100%";
       var h1 = "linear-gradient(".concat(color, " 0px,transparent 0px)");
       var v1 = "linear-gradient(90deg,".concat(color, " 0px, transparent 0px)");
       var h2 = "linear-gradient(".concat(color, " 1px, transparent 1px)");
@@ -1051,16 +1046,16 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "panmouseup",
     value: function panmouseup() {
-      this.eventHandler("window", "mousemove", this.panmousemove, 'unbind');
-      this.eventHandler("window", "mouseup", this.panmouseup, 'unbind');
+      this.eventHandler("window", "mousemove", this.panmousemove, "unbind");
+      this.eventHandler("window", "mouseup", this.panmouseup, "unbind");
     }
   }, {
     key: "panmousemove",
     value: function panmousemove(e) {
       var so = this.startOffset,
-          _this$props5 = this.props,
-          zoom = _this$props5.zoom,
-          onPan = _this$props5.onPan,
+          _this$props4 = this.props,
+          zoom = _this$props4.zoom,
+          onPan = _this$props4.onPan,
           coords = this.getClient(e); //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
 
       this.panned = true;
@@ -1071,9 +1066,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "setScreen",
     value: function setScreen() {
-      var _this$props6 = this.props,
-          zoom = _this$props6.zoom,
-          screenPosition = _this$props6.screenPosition;
+      var _this$props5 = this.props,
+          zoom = _this$props5.zoom,
+          screenPosition = _this$props5.screenPosition;
       var canvas = this.dom.current;
       this.translate = {
         x: this.axisPosition[0] - screenPosition[0] * zoom,
@@ -1088,20 +1083,19 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "onMouseDown",
     value: function onMouseDown(e) {
-      var _this$props7 = this.props,
-          mouseDown = _this$props7.mouseDown,
-          onPan = _this$props7.onPan,
-          pan = _this$props7.pan;
+      var _this$props6 = this.props,
+          events = _this$props6.events,
+          onPan = _this$props6.onPan;
       this.mousePosition = this.getMousePosition(e);
-      this.eventMode = 'mousedown';
+      this.eventMode = "onMouseDown";
       this.update();
 
-      if (pan && onPan && this.items.length === 0) {
+      if (onPan) {
         this.panmousedown(e);
       } else if (this.item) {
-        this.item.event.mousedown(this.item, this.props);
-      } else if (mouseDown) {
-        mouseDown(e, this.mousePosition);
+        this.item.onMouseDown(e, this.mousePosition, this.item, this.props);
+      } else if (events.onMouseDown) {
+        events.onMouseDown(e, this.mousePosition);
       }
 
       this.item = false;
@@ -1110,15 +1104,15 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "onMouseUp",
     value: function onMouseUp(e) {
-      var mouseUp = this.props.mouseUp;
+      var events = this.props.events;
       this.mousePosition = this.getMousePosition(e);
-      this.eventMode = 'mouseup';
+      this.eventMode = "onMouseUp";
       this.update();
 
       if (this.item) {
-        this.item.event.mouseup(this.item, this.props);
-      } else if (mouseUp) {
-        mouseUp(e, this.mousePosition);
+        this.item.onMouseUp(e, this.mousePosition, this.item, this.props);
+      } else if (events.onMouseUp) {
+        events.onMouseUp(e, this.mousePosition);
       }
 
       this.item = false;
@@ -1127,69 +1121,36 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "onClick",
     value: function onClick(e) {
-      var onClick = this.props.onClick;
+      var events = this.props.events;
       this.mousePosition = this.getMousePosition(e);
-      this.eventMode = 'click';
+      this.eventMode = "onClick";
       this.update();
 
       if (this.item) {
-        this.item.event.onClick(this.item, this.props);
-      } else if (onClick) {
-        onClick(e, this.mousePosition);
+        this.item.onClick(e, this.mousePosition, this.item, this.props);
+      } else if (events.onClick) {
+        events.onClick(e, this.mousePosition);
       }
 
       this.item = false;
       this.eventMode = false;
     }
   }, {
-    key: "arcTest",
-    value: function arcTest(_ref12) {
-      var _ref13 = _slicedToArray(_ref12, 2),
-          x = _ref13[0],
-          y = _ref13[1];
-
-      this.ctx.beginPath();
-      this.ctx.arc(x, y, 3, 0, 360 * Math.PI / 180);
-      this.ctx.fill();
-      this.ctx.closePath();
-    }
-  }, {
-    key: "searchItem",
-    value: function searchItem() {
-      for (var i = this.items.length - 1; i >= 0; i--) {
-        var item = this.items[i];
-
-        if (!item.callback) {
-          continue;
-        }
-
-        if (item.fill && item.inPath) {
-          item.callback(item);
-          return;
-        }
-
-        if (item.stroke && item.inStroke) {
-          item.callback(item);
-          return;
-        }
-      }
-    }
-  }, {
     key: "onMouseMove",
     value: function onMouseMove(e) {
+      var events = this.props.events;
       this.mousePosition = this.getMousePosition(e);
 
-      if (this.props.mouseMove) {
-        this.props.mouseMove(e, this.mousePosition);
+      if (events.onMouseMove) {
+        events.onMouseMove(e, this.mousePosition);
       }
     }
   }, {
     key: "getMousePosition",
     value: function getMousePosition(e) {
-      var _this$props8 = this.props,
-          unit = _this$props8.unit,
-          sp = _this$props8.screenPosition,
-          zoom = _this$props8.zoom;
+      var _this$props7 = this.props,
+          sp = _this$props7.screenPosition,
+          zoom = _this$props7.zoom;
       var client = this.getClient(e);
       var offset = (0, _jquery.default)(this.dom.current).offset();
       client = {
@@ -1203,20 +1164,33 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "render",
     value: function render() {
-      var _this$props9 = this.props,
-          id = _this$props9.id,
-          style = _this$props9.style,
-          className = _this$props9.className;
-      return /*#__PURE__*/_react.default.createElement("canvas", {
+      var _this$props8 = this.props,
+          id = _this$props8.id,
+          style = _this$props8.style,
+          className = _this$props8.className,
+          events = _this$props8.events;
+      var props = {
         ref: this.dom,
         className: className,
         id: id,
-        style: this.getStyle(style),
-        onMouseDown: this.onMouseDown.bind(this),
-        onMouseMove: this.onMouseMove.bind(this),
-        onMouseUp: this.onMouseUp.bind(this),
-        onClick: this.onClick.bind(this)
-      });
+        style: style
+      };
+
+      for (var prop in events) {
+        props[prop] = events[prop];
+      }
+
+      if ("ontouchstart" in document.documentElement) {
+        props.onTouchStart = this.onMouseDown.bind(this);
+        props.onTouchMove = this.onMouseMove.bind(this);
+        props.onTouchEnd = this.onMouseUp.bind(this);
+      } else {
+        props.onMouseDown = this.onMouseDown.bind(this);
+        props.onMouseMove = this.onMouseMove.bind(this);
+        props.onMouseUp = this.onMouseUp.bind(this);
+      }
+
+      return /*#__PURE__*/_react.default.createElement("canvas", props);
     }
   }]);
 
@@ -1226,11 +1200,12 @@ var Canvas = /*#__PURE__*/function (_Component) {
 exports.default = Canvas;
 Canvas.defaultProps = {
   zoom: 1,
-  axisPosition: ['50%', '50%'],
+  axisPosition: ["50%", "50%"],
   selectable: false,
   screenPosition: [0, 0],
   items: [],
+  events: {},
   rotateSetting: {
-    direction: 'clock'
+    direction: "clock"
   }
 };
