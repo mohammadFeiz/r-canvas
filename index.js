@@ -276,21 +276,19 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "getValueByRange",
     value: function getValueByRange(value, start, end) {
-      var type = _typeof(value);
+      var Value = typeof value === 'function' ? value() : value;
+
+      var type = _typeof(Value);
 
       if (type === undefined) {
         return start;
       }
 
       if (type === "number") {
-        return value;
+        return Value;
       }
 
-      if (type === "function") {
-        return value(start, end);
-      }
-
-      return this.getValueByPercent(parseFloat(value), start, end);
+      return this.getValueByPercent(parseFloat(Value), start, end);
     }
   }, {
     key: "getValueByPercent",
@@ -608,7 +606,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
           this["draw" + item.type](item, Index);
         } else {
           var str = "items[" + Index.join("].items[") + "]";
-          console.error("r-canvas => receive invalid item in " + str);
+          console.error("r-canvas => receive invalid item in " + str + ' :' + JSON.stringify(item));
         }
 
         if (item.showPivot) {

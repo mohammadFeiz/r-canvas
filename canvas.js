@@ -74,11 +74,11 @@ export default class Canvas extends Component {
       : { x: e.clientX, y: e.clientY };
   }
   getValueByRange(value, start, end) {
-    var type = typeof value;
+    var Value = typeof value === 'function'?value():value;
+    var type = typeof Value;
     if (type === undefined) {return start;}
-    if (type === "number") {return value;}
-    if (type === "function") {return value(start, end);}
-    return this.getValueByPercent(parseFloat(value), start, end);
+    if (type === "number") {return Value;}
+    return this.getValueByPercent(parseFloat(Value), start, end);
   }
   getValueByPercent(percent, start, end) {return start + (percent * (end - start)) / 100;}
   validateItem(item) {
@@ -322,7 +322,7 @@ export default class Canvas extends Component {
         this["draw" + item.type](item, Index);
       } else {
         var str = "items[" + Index.join("].items[") + "]";
-        console.error("r-canvas => receive invalid item in " + str);
+        console.error("r-canvas => receive invalid item in " + str + ' :' + JSON.stringify(item));
       }
 
       if (item.showPivot) {
