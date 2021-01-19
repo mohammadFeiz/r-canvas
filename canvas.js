@@ -397,9 +397,8 @@ export default class Canvas extends Component {
       if (this.eventMode && item[this.eventMode]) {
         let X = this.mousePosition.x * zoom + this.axisPosition[0] + this.screenX;
         let Y = -this.mousePosition.y * zoom + this.axisPosition[1] + this.screenY;// in isPointInPath and isPointInStroke value of under axis is positive 
-
         if (item.fill && ctx.isPointInPath(X, Y)) {
-          this.item = item;  
+          this.item = item;
         } 
         else if (item.stroke && ctx.isPointInStroke(X, Y)) {this.item = item}
       }
@@ -411,11 +410,11 @@ export default class Canvas extends Component {
     var [X, Y] = item.pivotedCoords;
     this.draw(item.items,{ x: X, y: Y, rotate: item.rotate, opacity: item.opacity },index);
   }
-  drawText({align = [0, 0],fontSize = 12,text = "Text",fill,stroke,pivotedCoords}) {
+  drawText({align = [0, 0],fontSize = 12,fontFamily = 'arial',text = "Text",fill,stroke,pivotedCoords}) {
     var { zoom } = this.props,[X, Y] = pivotedCoords,[textAlign, textBaseline] = this.getTextAlign(align);
     this.ctx.textAlign = textAlign;
     this.ctx.textBaseline = textBaseline;
-    this.ctx.font = fontSize * zoom + "px arial";
+    this.ctx.font = `${fontSize * zoom}px ${fontFamily}`;
     stroke && this.ctx.strokeText(text, X * zoom, Y * zoom);
     fill && this.ctx.fillText(text, X * zoom, Y * zoom);
   }

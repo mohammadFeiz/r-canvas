@@ -765,6 +765,8 @@ var Canvas = /*#__PURE__*/function (_Component) {
           align = _ref7$align === void 0 ? [0, 0] : _ref7$align,
           _ref7$fontSize = _ref7.fontSize,
           fontSize = _ref7$fontSize === void 0 ? 12 : _ref7$fontSize,
+          _ref7$fontFamily = _ref7.fontFamily,
+          fontFamily = _ref7$fontFamily === void 0 ? 'arial' : _ref7$fontFamily,
           _ref7$text = _ref7.text,
           text = _ref7$text === void 0 ? "Text" : _ref7$text,
           fill = _ref7.fill,
@@ -782,7 +784,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
 
       this.ctx.textAlign = textAlign;
       this.ctx.textBaseline = textBaseline;
-      this.ctx.font = fontSize * zoom + "px arial";
+      this.ctx.font = "".concat(fontSize * zoom, "px ").concat(fontFamily);
       stroke && this.ctx.strokeText(text, X * zoom, Y * zoom);
       fill && this.ctx.fillText(text, X * zoom, Y * zoom);
     }
