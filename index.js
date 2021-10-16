@@ -13,9 +13,9 @@ var _jquery = _interopRequireDefault(require("jquery"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
@@ -27,7 +27,7 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
@@ -43,11 +43,11 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
 
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
 
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
@@ -66,11 +66,16 @@ var Canvas = /*#__PURE__*/function (_Component) {
     _this.dom = /*#__PURE__*/(0, _react.createRef)();
     _this.width = 0;
     _this.height = 0;
+    _this.touch = "ontouchstart" in document.documentElement;
     (0, _jquery.default)(window).on("resize", _this.resize.bind(_assertThisInitialized(_this)));
     _this.mousePosition = [Infinity, Infinity];
 
     if (_this.props.canvasToClient) {
       _this.props.canvasToClient(_this.canvasToClient.bind(_assertThisInitialized(_this)));
+    }
+
+    if (_this.props.clientToCanvas) {
+      _this.props.clientToCanvas(_this.clientToCanvas.bind(_assertThisInitialized(_this)));
     }
 
     return _this;
@@ -375,7 +380,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
         mousemove: "touchmove",
         mouseup: "touchend"
       };
-      event = "ontouchstart" in document.documentElement ? me[event] : event;
+      event = this.touch ? me[event] : event;
       var element = typeof selector === "string" ? selector === "window" ? (0, _jquery.default)(window) : (0, _jquery.default)(selector) : selector;
       element.unbind(event, action);
 
@@ -386,10 +391,16 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "getClient",
     value: function getClient(e) {
-      return "ontouchstart" in document.documentElement ? {
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY
-      } : {
+      var touch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : this.touch;
+
+      if (touch) {
+        return {
+          x: e.changedTouches[0].clientX,
+          y: e.changedTouches[0].clientY
+        };
+      }
+
+      return {
         x: e.clientX,
         y: e.clientY
       };
@@ -585,7 +596,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
           parentrotate = _parent$rotate === void 0 ? 0 : _parent$rotate,
           _parent$opacity = parent.opacity,
           parentOpacity = _parent$opacity === void 0 ? 1 : _parent$opacity;
-      var debugMode = this.props.debugMode;
+      var _this$props = this.props,
+          debugMode = _this$props.debugMode,
+          lineWidth = _this$props.lineWidth;
       var originalItem = typeof item === "function" ? { ...item(this.props)
       } : item;
       var type = originalItem.type;
@@ -606,6 +619,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
           lineWidth: 1,
           opacity: 1
         },
+        lineWidth: lineWidth,
         ...updatedItem
       };
       updatedItem.items = originalItem.items;
@@ -931,9 +945,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
         return;
       }
 
-      var _this$props = this.props,
-          rotateDirection = _this$props.rotateDirection,
-          zoom = _this$props.zoom;
+      var _this$props2 = this.props,
+          rotateDirection = _this$props2.rotateDirection,
+          zoom = _this$props2.zoom;
       angle = angle * this.PI * (rotateDirection === "clock" ? 1 : -1);
       var s = Math.sin(angle),
           c = Math.cos(angle);
@@ -945,10 +959,10 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "update",
     value: function update() {
-      var _this$props2 = this.props,
-          getSize = _this$props2.getSize,
-          grid = _this$props2.grid,
-          zoom = _this$props2.zoom;
+      var _this$props3 = this.props,
+          getSize = _this$props3.getSize,
+          grid = _this$props3.grid,
+          zoom = _this$props3.zoom;
       var dom = (0, _jquery.default)(this.dom.current);
       this.width = dom.width();
       this.height = dom.height();
@@ -1114,9 +1128,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "getBackground",
     value: function getBackground() {
-      var _this$props3 = this.props,
-          grid = _this$props3.grid,
-          zoom = _this$props3.zoom;
+      var _this$props4 = this.props,
+          grid = _this$props4.grid,
+          zoom = _this$props4.zoom;
 
       var _grid = _slicedToArray(grid, 3),
           x = _grid[0],
@@ -1161,9 +1175,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
     key: "panmousemove",
     value: function panmousemove(e) {
       var so = this.startOffset,
-          _this$props4 = this.props,
-          zoom = _this$props4.zoom,
-          onPan = _this$props4.onPan,
+          _this$props5 = this.props,
+          zoom = _this$props5.zoom,
+          onPan = _this$props5.onPan,
           coords = this.getClient(e); //if(!this.panned && this.getLength({x:so.x,y:so.y},coords) < 5){return;}
 
       this.panned = true;
@@ -1174,9 +1188,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "onMouseDown",
     value: function onMouseDown(e) {
-      var _this$props5 = this.props,
-          events = _this$props5.events,
-          onPan = _this$props5.onPan;
+      var _this$props6 = this.props,
+          events = _this$props6.events,
+          onPan = _this$props6.onPan;
       this.mousePosition = this.getMousePosition(e);
       this.eventMode = "onMouseDown";
       this.update();
@@ -1213,7 +1227,8 @@ var Canvas = /*#__PURE__*/function (_Component) {
     key: "onClick",
     value: function onClick(e) {
       var events = this.props.events;
-      this.mousePosition = this.getMousePosition(e);
+      this.mousePosition = this.getMousePosition(e, false); //in onClick calc with no touch
+
       this.eventMode = "onClick";
       this.update();
 
@@ -1239,9 +1254,9 @@ var Canvas = /*#__PURE__*/function (_Component) {
   }, {
     key: "setScreen",
     value: function setScreen() {
-      var _this$props6 = this.props,
-          zoom = _this$props6.zoom,
-          screenPosition = _this$props6.screenPosition;
+      var _this$props7 = this.props,
+          zoom = _this$props7.zoom,
+          screenPosition = _this$props7.screenPosition;
       var canvas = this.dom.current;
       this.screenX = -this.getValueByRange(screenPosition[0], 0, this.width / zoom) * zoom;
       this.screenY = this.getValueByRange(screenPosition[1], 0, this.height / zoom) * zoom;
@@ -1257,41 +1272,70 @@ var Canvas = /*#__PURE__*/function (_Component) {
     }
   }, {
     key: "canvasToClient",
-    value: function canvasToClient(_ref19) {
-      var _ref20 = _slicedToArray(_ref19, 2),
-          x = _ref20[0],
-          y = _ref20[1];
+    value: function canvasToClient(obj) {
+      if (!obj) {
+        return false;
+      }
+
+      var _obj = _slicedToArray(obj, 2),
+          x = _obj[0],
+          y = _obj[1];
+
+      if (this.screenX === undefined) {
+        return false;
+      }
 
       var zoom = this.props.zoom;
-      return [Math.round(this.screenX + this.axisPosition[0] + x * zoom), Math.round(this.screenY + this.axisPosition[1] - y * zoom)];
+      x = this.getValueByRange(x, 0, this.width); // if x have % calc base on percent
+
+      y = this.getValueByRange(y, 0, this.height); // if y have % calc base on percent
+
+      return [Math.round(this.screenX + this.axisPosition[0] + x * zoom), Math.round(this.screenY + this.axisPosition[1] - y * zoom), x, y];
+    }
+  }, {
+    key: "clientToCanvas",
+    value: function clientToCanvas(_ref19) {
+      var _ref20 = _slicedToArray(_ref19, 2),
+          X = _ref20[0],
+          Y = _ref20[1];
+
+      var zoom = this.props.zoom;
+      var offset = (0, _jquery.default)(this.dom.current).offset();
+      var client = [X - offset.left + window.pageXOffset, Y - offset.top + window.pageYOffset];
+      return [Math.floor((client[0] - this.axisPosition[0] - this.screenX) / zoom), -Math.floor((client[1] - this.axisPosition[1] - this.screenY) / zoom)];
     }
   }, {
     key: "getMousePosition",
-    value: function getMousePosition(e) {
-      var zoom = this.props.zoom;
-      var client = this.getClient(e);
-      var offset = (0, _jquery.default)(this.dom.current).offset();
-      client = {
-        x: client.x - offset.left + window.pageXOffset,
-        y: client.y - offset.top + window.pageYOffset
-      };
-      var x = Math.floor((client.x - this.axisPosition[0] - this.screenX) / zoom);
-      var y = -Math.floor((client.y - this.axisPosition[1] - this.screenY) / zoom);
+    value: function getMousePosition(e, touch) {
+      var client = this.getClient(e, touch);
+
+      var _this$clientToCanvas = this.clientToCanvas([client.x, client.y]),
+          _this$clientToCanvas2 = _slicedToArray(_this$clientToCanvas, 2),
+          x = _this$clientToCanvas2[0],
+          y = _this$clientToCanvas2[1];
+
+      var _this$canvasToClient = this.canvasToClient([x, y]),
+          _this$canvasToClient2 = _slicedToArray(_this$canvasToClient, 2),
+          cx = _this$canvasToClient2[0],
+          cy = _this$canvasToClient2[1];
+
       return {
         x: x,
         y: y,
         px: x * 100 / this.width,
-        py: y * 100 / this.height
+        py: y * 100 / this.height,
+        cx: cx,
+        cy: cy
       };
     }
   }, {
     key: "render",
     value: function render() {
-      var _this$props7 = this.props,
-          id = _this$props7.id,
-          style = _this$props7.style,
-          className = _this$props7.className,
-          events = _this$props7.events;
+      var _this$props8 = this.props,
+          id = _this$props8.id,
+          style = _this$props8.style,
+          className = _this$props8.className,
+          events = _this$props8.events;
       var props = {
         ref: this.dom,
         className: className,
@@ -1303,7 +1347,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
         props[prop] = events[prop];
       }
 
-      if ("ontouchstart" in document.documentElement) {
+      if (this.touch) {
         props.onTouchStart = this.onMouseDown.bind(this);
         props.onTouchMove = this.onMouseMove.bind(this);
         props.onTouchEnd = this.onMouseUp.bind(this);
@@ -1313,6 +1357,7 @@ var Canvas = /*#__PURE__*/function (_Component) {
         props.onMouseUp = this.onMouseUp.bind(this);
       }
 
+      props.onClick = this.onClick.bind(this);
       return /*#__PURE__*/_react.default.createElement("canvas", props);
     }
   }]);

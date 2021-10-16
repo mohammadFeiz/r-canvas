@@ -7,10 +7,14 @@ export default class Canvas extends Component {
     this.dom = createRef();
     this.width = 0;
     this.height = 0;
+    this.touch = "ontouchstart" in document.documentElement;
     $(window).on("resize", this.resize.bind(this));
     this.mousePosition = [Infinity, Infinity];
     if(this.props.canvasToClient){
       this.props.canvasToClient(this.canvasToClient.bind(this));
+    }
+    if(this.props.clientToCanvas){
+      this.props.clientToCanvas(this.clientToCanvas.bind(this));
     }
   }
   getPrepDip(line){
@@ -128,15 +132,14 @@ export default class Canvas extends Component {
   }
   eventHandler(selector, event, action, type = "bind") {
     var me = {mousedown: "touchstart",mousemove: "touchmove",mouseup: "touchend"};
-    event = "ontouchstart" in document.documentElement ? me[event] : event;
+    event = this.touch ? me[event] : event;
     var element = typeof selector === "string" ? (selector === "window"? $(window): $(selector)): selector;
     element.unbind(event, action);
     if (type === "bind") {element.bind(event, action);}
   }
-  getClient(e) {
-    return "ontouchstart" in document.documentElement
-      ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
-      : { x: e.clientX, y: e.clientY };
+  getClient(e,touch = this.touch) {
+    if(touch){return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }}
+    return { x: e.clientX, y: e.clientY }
   }
   getValueByRange(value, start, end) {
     var Value = typeof value === 'function'?value():value;
@@ -310,13 +313,13 @@ export default class Canvas extends Component {
       rotate: parentrotate = 0,
       opacity: parentOpacity = 1
     } = parent;
-    var { debugMode } = this.props;
+    var { debugMode,lineWidth } = this.props;
     var originalItem = typeof item === "function" ? { ...item(this.props) } : item;
     var type = originalItem.type;
     if(!type){console.error('RCanvas => missing type in item:')}
     var updatedItem = JSON.parse(JSON.stringify(originalItem));
     //set default props
-    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt",rotate: 0,x: 0,y: 0,lineWidth: 1,opacity: 1},...updatedItem};
+    updatedItem = {...{showPivot: false,lineJoin: "miter",lineCap: "butt",rotate: 0,x: 0,y: 0,lineWidth: 1,opacity: 1},lineWidth,...updatedItem};
     updatedItem.items = originalItem.items;
     updatedItem.rect = false;
     if (!updatedItem.stroke && !updatedItem.fill) {updatedItem.stroke = "#000";}
@@ -622,7 +625,7 @@ export default class Canvas extends Component {
   }
   onClick(e) {
     const { events } = this.props;
-    this.mousePosition = this.getMousePosition(e);
+    this.mousePosition = this.getMousePosition(e,false);//in onClick calc with no touch
     this.eventMode = "onClick";
     this.update();
     if (this.item) {this.item.onClick(e, this.mousePosition,this.item, this.props)} 
@@ -648,27 +651,36 @@ export default class Canvas extends Component {
     $(canvas).css({backgroundPosition: this.translate.x + "px " + this.translate.y + "px"});
   }
   
-  canvasToClient([x,y]){
+  canvasToClient(obj){
+    if(!obj){return false;}
+    var [x,y] = obj;
+    if(this.screenX === undefined){return false}
     var {zoom} = this.props;
+    x = this.getValueByRange(x,0,this.width); // if x have % calc base on percent
+    y = this.getValueByRange(y,0,this.height); // if y have % calc base on percent
     return [ 
         Math.round(this.screenX + this.axisPosition[0] + x * zoom), 
-        Math.round(this.screenY + this.axisPosition[1] - y * zoom) 
+        Math.round(this.screenY + this.axisPosition[1] - y * zoom),
+        x,y
     ];
   }
-  getMousePosition(e) {
+  clientToCanvas([X,Y]){
     var { zoom } = this.props;
-    var client = this.getClient(e);
     var offset = $(this.dom.current).offset();
-    client = {x: client.x - offset.left + window.pageXOffset,y: client.y - offset.top + window.pageYOffset};
-    var x = Math.floor((client.x - this.axisPosition[0] - this.screenX) / zoom);
-    var y = -Math.floor((client.y - this.axisPosition[1] - this.screenY) / zoom);
-    return {x, y, px:(x * 100) / this.width, py:(y * 100) / this.height};
+    var client = [X - offset.left + window.pageXOffset,Y - offset.top + window.pageYOffset];
+    return [Math.floor((client[0] - this.axisPosition[0] - this.screenX) / zoom),-Math.floor((client[1] - this.axisPosition[1] - this.screenY) / zoom)];
+  }
+  getMousePosition(e,touch) {
+    var client = this.getClient(e,touch);
+    var [x,y] = this.clientToCanvas([client.x,client.y]);
+    var [cx,cy] = this.canvasToClient([x,y])
+    return {x, y, px:(x * 100) / this.width, py:(y * 100) / this.height,cx,cy};
   }
   render() {
-    var { id, style, className ,events } = this.props;
+    var { id, style, className ,events} = this.props;
     var props = {ref:this.dom,className,id,style};
     for(let prop in events){props[prop] = events[prop];}
-    if("ontouchstart" in document.documentElement){
+    if(this.touch){
       props.onTouchStart = this.onMouseDown.bind(this);
       props.onTouchMove= this.onMouseMove.bind(this);
       props.onTouchEnd= this.onMouseUp.bind(this);
@@ -678,6 +690,7 @@ export default class Canvas extends Component {
       props.onMouseMove= this.onMouseMove.bind(this);
       props.onMouseUp= this.onMouseUp.bind(this);
     }
+    props.onClick = this.onClick.bind(this)
     return <canvas {...props}/> ;
   }
 }
